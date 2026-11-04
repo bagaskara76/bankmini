@@ -67,6 +67,10 @@ The application provides a rate-limited `POST /api/deploy/migrate` endpoint for 
 
 The endpoint runs forced migrations, creates the configured storage links, and clears optimization caches. It intentionally does not run database seeders: the current `DatabaseSeeder` creates demo accounts with default passwords. Review and update those accounts before running any seeder in production. Prefer running deployment commands over SSH when possible.
 
+## FTP deployment workflow
+
+The GitHub Actions workflow in `.github/workflows/deploy.yml` builds production PHP dependencies and Vite assets, then deploys the Laravel project to `public_html/` over FTPS whenever code is pushed to `main`. Configure the repository Actions secrets `FTP_SERVER`, `FTP_USERNAME`, and `FTP_PASSWORD`; optionally set `FTP_PORT` if your host does not use port 21. Configure the production `.env` directly on the server and keep it out of GitHub. The hosting account must support FTPS and Apache `mod_rewrite` for the root `.htaccess` routing to `public/`. Database migrations are not run automatically by this file upload; run them over SSH or call the protected migration endpoint separately.
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
