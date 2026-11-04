@@ -1,0 +1,235 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <a href="{{ route('teller.dashboard') }}" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
+        <h4 class="fw-bold">Proses Transaksi</h4>
+    </div>
+</div>
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show">
+    <ul class="mb-0">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if(isset($receiptTransaction) && $receiptTransaction)
+    @include('teller.receipt', ['transaction' => $receiptTransaction])
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var receiptTemplate = document.getElementById('transactionReceiptTemplate');
+
+            if (!receiptTemplate) {
+                return;
+            }
+
+            Swal.fire({
+                title: 'Transaksi Berhasil',
+                html: receiptTemplate.innerHTML,
+                width: '42rem',
+                showCancelButton: true,
+                confirmButtonText: 'Lanjut Transaksi',
+                cancelButtonText: 'Selesai',
+                showCloseButton: true,
+                allowOutsideClick: false,
+                didOpen: function () {
+                    var printButton = document.getElementById('receiptModalPrintButton');
+                    if (printButton) {
+                        printButton.addEventListener('click', function () {
+                            window.print();
+                        });
+                    }
+                }
+            }).then(function (result) {
+                if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = @json(route('teller.dashboard'));
+                }
+            });
+        });
+    </script>
+@endif
+
+<div class="row">
+    <!-- Informasi Nasabah -->
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title fw-bold border-bottom border-light pb-2 mb-3">Informasi Nasabah</h5>
+                <p class="mb-1 text-light small">Nama Nasabah</p>
+                <h5 class="fw-bold mb-3">{{ $customer->user->name }}</h5>
+                
+                <p class="mb-1 text-light small">Nomor Rekening</p>
+                <h5 class="fw-bold mb-3">{{ $customer->account_number }}</h5>
+                
+                <p class="mb-1 text-light small">Saldo Saat Ini</p>
+                <h3 class="fw-bold mb-0">Rp {{ number_format($customer->balance, 0, ',', '.') }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Setoran -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="bi bi-arrow-down-circle"></i> Setoran Tunai
+            </div>
+            <div class="card-body">
+                <form id="depositForm" action="{{ route('teller.deposit', $customer->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Nominal Setoran (Rp)</label>
+                        <input type="number" class="form-control form-control-lg" name="amount" min="1" required>
+                        <div class="form-text">Pastikan uang fisik telah dihitung dan sesuai.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="depositNote">Catatan</label>
+                        <textarea id="depositNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-success w-100" id="depositConfirmButton">
+                        Proses Setoran
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Penarikan -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-danger">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="bi bi-arrow-up-circle"></i> Penarikan Tunai
+            </div>
+            <div class="card-body">
+                <form action="{{ route('teller.withdraw', $customer->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Nominal Penarikan (Rp)</label>
+                        <input type="number" class="form-control form-control-lg" name="amount" min="1" required>
+                        <div class="form-text text-danger">Saldo minimum mengendap: Rp 10.000</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">PIN Nasabah (Otorisasi)</label>
+                        <input type="password" class="form-control text-center fs-4 letter-spacing-2" name="pin" maxlength="6" required placeholder="******">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="withdrawalNote">Catatan</label>
+                        <textarea id="withdrawalNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-danger w-100" id="withdrawConfirmButton">
+                        Proses Penarikan
+                    </button>
+                </form>
+                <hr>
+                <div class="small fw-semibold mb-2">Lupa PIN nasabah?</div>
+                <p class="small text-muted">Kirim OTP ke email terdaftar nasabah untuk verifikasi sebelum PIN diganti.</p>
+                <a href="{{ route('teller.pin_recovery', $customer->id) }}"
+                   class="btn btn-outline-secondary btn-sm w-100">Reset PIN dengan OTP</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var depositButton = document.getElementById('depositConfirmButton');
+        var withdrawButton = document.getElementById('withdrawConfirmButton');
+
+        if (depositButton) {
+            depositButton.addEventListener('click', function () {
+                var amountInput = document.querySelector('#depositForm input[name="amount"]');
+                var amount = amountInput ? parseInt(amountInput.value, 10) : 0;
+
+                if (!amount || amount <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nominal tidak valid',
+                        text: 'Masukkan nominal setoran yang benar.',
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Konfirmasi Setoran',
+                    html: 'Apakah Anda yakin data setoran sudah benar?<br><strong>Rp ' + new Intl.NumberFormat('id-ID').format(amount) + '</strong>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Proses Setoran',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('depositForm').submit();
+                    }
+                });
+            });
+        }
+
+        if (withdrawButton) {
+            withdrawButton.addEventListener('click', function () {
+                var withdrawForm = withdrawButton.closest('form');
+                var amountInput = withdrawForm.querySelector('input[name="amount"]');
+                var pinInput = withdrawForm.querySelector('input[name="pin"]');
+                var amount = amountInput ? parseInt(amountInput.value, 10) : 0;
+                var pin = pinInput ? pinInput.value : '';
+
+                if (!amount || amount <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nominal tidak valid',
+                        text: 'Masukkan nominal penarikan yang benar.',
+                    });
+                    return;
+                }
+
+                if (!pin || pin.length < 1) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'PIN dibutuhkan',
+                        text: 'Masukkan PIN nasabah untuk otorisasi.',
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Konfirmasi Penarikan',
+                    html: 'Apakah Anda yakin data penarikan sudah benar?<br><strong>Rp ' + new Intl.NumberFormat('id-ID').format(amount) + '</strong>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Proses Penarikan',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        withdrawForm.submit();
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endpush

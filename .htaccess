@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block hidden files and directories, except the standard ACME challenge folder.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+
+    # Block direct access to application source and private runtime files.
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^storage/(logs|framework|app/private)(/|$) - [F,L]
+    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml(\.dist)?|artisan|server\.php|vite\.config\.js|webpack\.mix\.js|README\.md)$ - [F,L]
+
+    # Route requests through Laravel's public document root.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
