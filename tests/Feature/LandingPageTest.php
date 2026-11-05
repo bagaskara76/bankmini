@@ -13,6 +13,8 @@ class LandingPageTest extends TestCase
             ->assertSee('Apa itu Bank Mini?')
             ->assertSee('Layanan yang membantu kegiatan Bank Mini')
             ->assertSee('>Login <span', false)
+            ->assertSee('Download Aplikasi Android')
+            ->assertSee(asset('app-release.apk'), false)
             ->assertSee(route('login'), false);
     }
 
