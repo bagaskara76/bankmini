@@ -34,5 +34,9 @@ Route::prefix('mobile')->group(function () {
         Route::get('/profile', [MobileCustomerController::class, 'profile']);
         Route::get('/transactions', [MobileCustomerController::class, 'transactions']);
         Route::post('/logout', [MobileCustomerController::class, 'logout']);
+        Route::post('/password/change', [MobileCustomerController::class, 'changePassword'])
+            ->middleware('throttle:5,1');
+        Route::post('/pin/change', [MobileCustomerController::class, 'changePin'])
+            ->middleware('throttle:5,1');
     });
 });

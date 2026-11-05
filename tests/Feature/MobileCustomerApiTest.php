@@ -136,6 +136,80 @@ class MobileCustomerApiTest extends TestCase
             ->assertJsonMissing(['amount' => 9000]);
     }
 
+    public function test_authenticated_customer_can_change_password_with_current_password(): void
+    {
+        $customer = $this->createCustomer();
+        $token = $customer->createToken('current-device')->plainTextToken;
+        $otherToken = $customer->createToken('other-device')->plainTextToken;
+
+        $this->withToken($token)->postJson('/api/mobile/password/change', [
+            'current_password' => 'wrong-password',
+            'password' => 'NewPass456!',
+            'password_confirmation' => 'NewPass456!',
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'Password saat ini tidak sesuai.');
+
+        $this->withToken($token)->postJson('/api/mobile/password/change', [
+            'current_password' => 'OldPass123!',
+            'password' => 'OldPass123!',
+            'password_confirmation' => 'OldPass123!',
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'Password baru tidak boleh sama dengan password saat ini.');
+
+        $this->withToken($token)->postJson('/api/mobile/password/change', [
+            'current_password' => 'OldPass123!',
+            'password' => 'NewPass456!',
+            'password_confirmation' => 'NewPass456!',
+        ])->assertOk()
+            ->assertJsonPath('message', 'Password berhasil diubah. Sesi pada perangkat lain telah dikeluarkan.');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $customer->id,
+            'plain_password' => 'NewPass456!',
+        ]);
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'token' => hash('sha256', explode('|', $token, 2)[1]),
+        ]);
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'token' => hash('sha256', explode('|', $otherToken, 2)[1]),
+        ]);
+        $this->postJson('/api/mobile/login', [
+            'username' => $customer->username,
+            'password' => 'NewPass456!',
+        ])->assertOk();
+    }
+
+    public function test_authenticated_customer_can_change_transaction_pin_with_current_pin(): void
+    {
+        $customer = $this->createCustomer();
+        $token = $customer->createToken('current-device')->plainTextToken;
+
+        $this->withToken($token)->postJson('/api/mobile/pin/change', [
+            'current_pin' => '000000',
+            'pin' => '654321',
+            'pin_confirmation' => '654321',
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'PIN transaksi saat ini tidak sesuai.');
+
+        $this->withToken($token)->postJson('/api/mobile/pin/change', [
+            'current_pin' => '123456',
+            'pin' => '123456',
+            'pin_confirmation' => '123456',
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'PIN baru tidak boleh sama dengan PIN saat ini.');
+
+        $this->withToken($token)->postJson('/api/mobile/pin/change', [
+            'current_pin' => '123456',
+            'pin' => '654321',
+            'pin_confirmation' => '654321',
+        ])->assertOk()
+            ->assertJsonPath('message', 'PIN transaksi berhasil diubah.');
+
+        $customer->customer->refresh();
+        $this->assertTrue(Hash::check('654321', $customer->customer->pin));
+        $this->assertFalse(Hash::check('123456', $customer->customer->pin));
+    }
+
     public function test_password_recovery_requires_email_otp_and_a_new_password(): void
     {
         $customer = $this->createCustomer();

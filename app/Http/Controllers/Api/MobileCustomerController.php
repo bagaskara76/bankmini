@@ -308,6 +308,102 @@ class MobileCustomerController extends Controller
         ]);
     }
 
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.max' => 'Password baru maksimal 255 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $user = $request->user();
+        $result = DB::transaction(function () use ($validated, $user, $request) {
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if (! Hash::check($validated['current_password'], $user->password)) {
+                return 'invalid_current_password';
+            }
+
+            if (Hash::check($validated['password'], $user->password)) {
+                return 'same_password';
+            }
+
+            $user->password = Hash::make($validated['password']);
+            $user->plain_password = $validated['password'];
+            $user->save();
+
+            $currentToken = $request->user()->currentAccessToken();
+            if ($currentToken) {
+                $user->tokens()->where('id', '!=', $currentToken->getKey())->delete();
+            }
+
+            return 'updated';
+        });
+
+        if ($result === 'invalid_current_password') {
+            return response()->json(['message' => 'Password saat ini tidak sesuai.'], 422);
+        }
+
+        if ($result === 'same_password') {
+            return response()->json([
+                'message' => 'Password baru tidak boleh sama dengan password saat ini.',
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Password berhasil diubah. Sesi pada perangkat lain telah dikeluarkan.',
+        ]);
+    }
+
+    public function changePin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_pin' => ['required', 'digits:6'],
+            'pin' => ['required', 'digits:6', 'confirmed'],
+        ], [
+            'current_pin.required' => 'PIN saat ini wajib diisi.',
+            'current_pin.digits' => 'PIN saat ini harus terdiri dari 6 angka.',
+            'pin.required' => 'PIN baru wajib diisi.',
+            'pin.digits' => 'PIN baru harus terdiri dari 6 angka.',
+            'pin.confirmed' => 'Konfirmasi PIN tidak cocok.',
+        ]);
+
+        $customer = $this->customerFor($request->user());
+        $result = DB::transaction(function () use ($validated, $customer) {
+            $customer = Customer::whereKey($customer->id)->lockForUpdate()->firstOrFail();
+
+            if (! Hash::check($validated['current_pin'], $customer->pin)) {
+                return 'invalid_current_pin';
+            }
+
+            if (Hash::check($validated['pin'], $customer->pin)) {
+                return 'same_pin';
+            }
+
+            $customer->pin = Hash::make($validated['pin']);
+            $customer->save();
+
+            return 'updated';
+        });
+
+        if ($result === 'invalid_current_pin') {
+            return response()->json(['message' => 'PIN transaksi saat ini tidak sesuai.'], 422);
+        }
+
+        if ($result === 'same_pin') {
+            return response()->json([
+                'message' => 'PIN baru tidak boleh sama dengan PIN saat ini.',
+            ], 422);
+        }
+
+        return response()->json(['message' => 'PIN transaksi berhasil diubah.']);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()?->delete();
