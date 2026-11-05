@@ -12,6 +12,7 @@ class LandingPageTest extends TestCase
             ->assertOk()
             ->assertSee('Apa itu Bank Mini?')
             ->assertSee('Layanan yang membantu kegiatan Bank Mini')
+            ->assertSee('>Login <span', false)
             ->assertSee(route('login'), false);
     }
 
@@ -19,6 +20,8 @@ class LandingPageTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee('Silakan login untuk mengakses sistem');
+            ->assertSee('Silakan login untuk mengakses sistem')
+            ->assertSee('Kembali ke halaman utama')
+            ->assertSee(route('home'), false);
     }
 }

@@ -187,7 +187,7 @@
                     <h1>Belajar mengelola uang, <span>dimulai dari sekolah.</span></h1>
                     <p class="hero-copy">E-Teller Bank Mini membantu siswa dan petugas sekolah mencatat layanan tabungan dengan lebih teratur, mudah dipantau, dan transparan.</p>
                     <div class="hero-actions">
-                        <a class="button" href="{{ route('login') }}">Masuk ke aplikasi <span aria-hidden="true">&rarr;</span></a>
+                        <a class="button" href="{{ route('login') }}">Login <span aria-hidden="true">&rarr;</span></a>
                         <a class="button button-outline" href="#tentang">Kenali Bank Mini</a>
                     </div>
                     <div class="hero-note"><span aria-hidden="true">●</span><span><strong>Untuk lingkungan sekolah</strong> &nbsp;Pembelajaran dan layanan tabungan siswa</span></div>

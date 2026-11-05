@@ -64,6 +64,9 @@
                 <div class="text-center mt-4">
                     <a href="{{ route('password.request') }}" class="btn btn-link">Lupa Password?</a>
                 </div>
+                <div class="text-center">
+                    <a href="{{ route('home') }}" class="btn btn-link">Kembali ke halaman utama</a>
+                </div>
             </div>
         </div>
         <div class="text-center mt-4 text-muted small">
