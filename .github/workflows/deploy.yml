@@ -22,43 +22,12 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          tools: composer:v2
-
-      - name: Install production PHP dependencies
-        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Build frontend assets
-        run: |
-          npm install --no-package-lock --no-audit --no-fund
-          npm run build
-
       - name: Deploy files over FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}
-          protocol: ftps
-          local-dir: ./
           server-dir: public_html/
-          exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/tests/**
-            **/.env*
-            **/auth.json
-            **/.phpunit*
-            **/storage/logs/**
+        env:
+          NODE_OPTIONS: "--openssl-legacy-provider"
