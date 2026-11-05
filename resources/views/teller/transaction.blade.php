@@ -1,6 +1,62 @@
 @extends('layouts.app')
 
 @section('content')
+@push('styles')
+<style>
+    .transaction-customer-card {
+        background: linear-gradient(145deg, #1e3c72, #2a5298);
+        box-shadow: 0 10px 24px rgba(30, 60, 114, .16);
+    }
+
+    .transaction-customer-card .text-light {
+        color: rgba(255, 255, 255, .76) !important;
+    }
+
+    .transaction-form-card {
+        overflow: hidden;
+        border: 1px solid #e1e8f2;
+        border-top: 4px solid #2a5298;
+        background: #fff;
+    }
+
+    .transaction-form-card .card-header {
+        padding: 14px 18px;
+        border: 0;
+        background: #e9eff9;
+        color: #1e3c72;
+    }
+
+    .transaction-form-card--withdrawal {
+        border-top-color: #5879ad;
+    }
+
+    .transaction-form-card--withdrawal .card-header {
+        background: #eef3fb;
+    }
+
+    .transaction-action-button {
+        border: 0;
+        background: #2a5298;
+        color: #fff;
+    }
+
+    .transaction-action-button:hover,
+    .transaction-action-button:focus-visible {
+        background: #1e3c72;
+        color: #fff;
+    }
+
+    .transaction-withdrawal-button {
+        background: #5879ad;
+    }
+
+    .transaction-withdrawal-button:hover,
+    .transaction-withdrawal-button:focus-visible {
+        background: #3e5f91;
+    }
+</style>
+@endpush
+
 <div class="row">
     <div class="col-md-12 mb-4">
         <a href="{{ route('teller.dashboard') }}" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
@@ -72,7 +128,7 @@
 <div class="row">
     <!-- Informasi Nasabah -->
     <div class="col-md-4 mb-4">
-        <div class="card bg-primary text-white">
+        <div class="card transaction-customer-card text-white">
             <div class="card-body">
                 <h5 class="card-title fw-bold border-bottom border-light pb-2 mb-3">Informasi Nasabah</h5>
                 <p class="mb-1 text-light small">Nama Nasabah</p>
@@ -89,8 +145,8 @@
 
     <!-- Form Setoran -->
     <div class="col-md-4 mb-4">
-        <div class="card h-100 border-success">
-            <div class="card-header bg-success text-white fw-bold">
+        <div class="card h-100 transaction-form-card">
+            <div class="card-header fw-bold">
                 <i class="bi bi-arrow-down-circle"></i> Setoran Tunai
             </div>
             <div class="card-body">
@@ -105,7 +161,7 @@
                         <label class="form-label" for="depositNote">Catatan</label>
                         <textarea id="depositNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
                     </div>
-                    <button type="button" class="btn btn-success w-100" id="depositConfirmButton">
+                    <button type="button" class="btn transaction-action-button w-100" id="depositConfirmButton">
                         Proses Setoran
                     </button>
                 </form>
@@ -115,8 +171,8 @@
 
     <!-- Form Penarikan -->
     <div class="col-md-4 mb-4">
-        <div class="card h-100 border-danger">
-            <div class="card-header bg-danger text-white fw-bold">
+        <div class="card h-100 transaction-form-card transaction-form-card--withdrawal">
+            <div class="card-header fw-bold">
                 <i class="bi bi-arrow-up-circle"></i> Penarikan Tunai
             </div>
             <div class="card-body">
@@ -135,7 +191,7 @@
                         <label class="form-label" for="withdrawalNote">Catatan</label>
                         <textarea id="withdrawalNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
                     </div>
-                    <button type="button" class="btn btn-danger w-100" id="withdrawConfirmButton">
+                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton">
                         Proses Penarikan
                     </button>
                 </form>
