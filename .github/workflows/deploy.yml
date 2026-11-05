@@ -43,6 +43,8 @@ jobs:
 
       - name: Deploy files over FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
