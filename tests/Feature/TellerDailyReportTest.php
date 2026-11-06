@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\DailyReport;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class TellerDailyReportTest extends TestCase
@@ -90,5 +92,40 @@ class TellerDailyReportTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.dispute_resolution'))
             ->assertDontSee('Teller Kas');
+    }
+
+    public function test_withdrawal_is_blocked_until_teller_records_initial_capital(): void
+    {
+        $teller = User::factory()->create(['role' => 'teller']);
+        $customerUser = User::factory()->create(['role' => 'customer']);
+        $customer = Customer::create([
+            'user_id' => $customerUser->id,
+            'account_number' => '2026110601',
+            'pin' => Hash::make('123456'),
+            'qr_code_string' => 'QR-2026110601',
+            'balance' => 20000,
+            'grade' => 10,
+            'kelas' => 'RPL 1',
+        ]);
+
+        $this->actingAs($teller)
+            ->get(route('teller.transaction', $customer))
+            ->assertOk()
+            ->assertSee('Catat modal awal hari ini di Dashboard Teller sebelum melakukan penarikan.')
+            ->assertSee('id="withdrawConfirmButton" disabled', false);
+
+        $this->post(route('teller.withdraw', $customer), [
+            'amount' => 1000,
+            'pin' => '123456',
+        ])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Penarikan tidak dapat diproses sebelum teller mencatat modal awal hari ini.');
+
+        $this->assertSame(20000, (int) $customer->fresh()->balance);
+        $this->assertDatabaseMissing('transactions', [
+            'customer_id' => $customer->id,
+            'teller_id' => $teller->id,
+            'type' => 'withdrawal',
+        ]);
     }
 }

@@ -108,6 +108,7 @@ class TellerController extends Controller
 
     public function showTransaction(Customer $customer)
     {
+        $dailyReport = $this->todayReport();
         $receiptTransaction = null;
         $receiptTransactionId = session('receiptTransactionId');
 
@@ -118,7 +119,7 @@ class TellerController extends Controller
                 ->find($receiptTransactionId);
         }
 
-        return view('teller.transaction', compact('customer', 'receiptTransaction'));
+        return view('teller.transaction', compact('customer', 'dailyReport', 'receiptTransaction'));
     }
 
     public function searchCustomer(Request $request)
@@ -142,7 +143,9 @@ class TellerController extends Controller
             return back()->with('error', 'Nasabah tidak ditemukan');
         }
 
-        return view('teller.transaction', compact('customer'));
+        $dailyReport = $this->todayReport();
+
+        return view('teller.transaction', compact('customer', 'dailyReport'));
     }
 
     public function processDeposit(Request $request, $customer_id)
@@ -238,8 +241,14 @@ class TellerController extends Controller
             'pin.digits' => 'PIN harus terdiri dari 6 angka.',
         ]);
 
-        if ($this->todayReport()->status !== 'draft') {
+        $report = $this->todayReport();
+
+        if ($report->status !== 'draft') {
             return back()->with('error', 'Transaksi baru tidak dapat diproses karena laporan harian sudah diajukan.');
+        }
+
+        if ($report->initial_capital <= 0) {
+            return back()->with('error', 'Penarikan tidak dapat diproses sebelum teller mencatat modal awal hari ini.');
         }
 
         $customer = Customer::findOrFail($customer_id);

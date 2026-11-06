@@ -191,7 +191,12 @@
                         <label class="form-label" for="withdrawalNote">Catatan</label>
                         <textarea id="withdrawalNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
                     </div>
-                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton">
+                    @if($dailyReport->initial_capital <= 0)
+                        <div class="alert alert-warning small">
+                            Catat modal awal hari ini di Dashboard Teller sebelum melakukan penarikan.
+                        </div>
+                    @endif
+                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton" @disabled($dailyReport->initial_capital <= 0)>
                         Proses Penarikan
                     </button>
                 </form>
