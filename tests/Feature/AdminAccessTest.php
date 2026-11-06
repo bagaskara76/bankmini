@@ -44,9 +44,7 @@ class AdminAccessTest extends TestCase
             ->assertOk()
             ->assertDontSee('Rangkuman Data Nasabah per Kelas')
             ->assertSee('Daftar nama nasabah aktif dikelompokkan berdasarkan tingkat dan kelas')
-            ->assertSee('.member-navigation .nav-link', false)
-            ->assertSee('color: #111827 !important', false)
-            ->assertSee('background-color: #0756c9', false)
+            ->assertDontSee('Navigasi anggota dan nasabah')
             ->assertSee('LPS 1')
             ->assertSee('LPS 2');
         $this->get('/supervisor/dashboard')->assertNotFound();

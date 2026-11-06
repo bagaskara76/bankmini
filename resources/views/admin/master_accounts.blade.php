@@ -9,25 +9,6 @@
         vertical-align: -0.15em;
     }
 
-    .member-navigation .nav-link {
-        color: #111827 !important;
-        background-color: #e2e8f0;
-        border: 1px solid #94a3b8;
-        font-weight: 600;
-    }
-
-    .member-navigation .nav-link:hover,
-    .member-navigation .nav-link:focus {
-        color: #fff !important;
-        background-color: #334155;
-        border-color: #334155;
-    }
-
-    .member-navigation .nav-link.active {
-        color: #fff !important;
-        background-color: #0756c9;
-        border-color: #0756c9;
-    }
 </style>
 @endpush
 
@@ -36,12 +17,6 @@
     <div class="col-md-12 mt-4">
         <h3><i class="bi bi-people"></i> Member</h3>
         <p class="text-muted">Kelola anggota yang belum memiliki akun. Aktivasi akun dilakukan oleh admin.</p>
-
-        <nav class="nav nav-pills member-navigation gap-2 mb-3" aria-label="Navigasi anggota dan nasabah">
-            <a class="nav-link active" aria-current="page" href="{{ route('admin.members.index') }}">Member</a>
-            <a class="nav-link" href="{{ route('admin.data_saver') }}">Data Saver</a>
-            <a class="nav-link" href="{{ route('admin.nasabah_kelas') }}">Nasabah per Kelas</a>
-        </nav>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>

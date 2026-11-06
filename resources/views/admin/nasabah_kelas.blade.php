@@ -2,26 +2,6 @@
 
 @push('styles')
 <style>
-    .member-navigation .nav-link {
-        color: #111827 !important;
-        background-color: #e2e8f0;
-        border: 1px solid #94a3b8;
-        font-weight: 600;
-    }
-
-    .member-navigation .nav-link:hover,
-    .member-navigation .nav-link:focus {
-        color: #fff !important;
-        background-color: #334155;
-        border-color: #334155;
-    }
-
-    .member-navigation .nav-link.active {
-        color: #fff !important;
-        background-color: #0756c9;
-        border-color: #0756c9;
-    }
-
     /* ── Warna per Angkatan ── */
     .grade-10 { --grade-color: #2a5298; --grade-light: #dce8ff; }
     .grade-11 { --grade-color: #6d28d9; --grade-light: #ede9fe; }
@@ -104,14 +84,6 @@
             <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah per Kelas</h3>
             <p class="text-muted mb-0 small">Daftar nama nasabah aktif dikelompokkan berdasarkan tingkat dan kelas</p>
         </div>
-    </div>
-
-    <div class="col-12 mb-3">
-        <nav class="nav nav-pills member-navigation gap-2" aria-label="Navigasi anggota dan nasabah">
-            <a class="nav-link" href="{{ route('admin.members.index') }}">Member</a>
-            <a class="nav-link" href="{{ route('admin.data_saver') }}">Data Saver</a>
-            <a class="nav-link active" aria-current="page" href="{{ route('admin.nasabah_kelas') }}">Nasabah per Kelas</a>
-        </nav>
     </div>
 
     {{-- ── Statistik Ringkas ── --}}
