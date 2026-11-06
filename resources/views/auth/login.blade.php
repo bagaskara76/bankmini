@@ -1,5 +1,55 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    .login-navigation {
+        display: grid;
+        gap: .75rem;
+        margin-top: 1.5rem;
+    }
+
+    .login-navigation__link {
+        display: flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        border-radius: 9px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .login-navigation__link:hover {
+        transform: translateY(-1px);
+    }
+
+    .login-navigation__link--recovery {
+        border: 1px solid #c9d8f0;
+        background: #f2f6fc;
+        color: #234b85;
+    }
+
+    .login-navigation__link--recovery:hover {
+        border-color: #2a5298;
+        background: #e7eef9;
+        color: #1e3c72;
+    }
+
+    .login-navigation__link--home {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #526174;
+    }
+
+    .login-navigation__link--home:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        color: #334155;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="col-md-5">
@@ -61,11 +111,13 @@
                 </script>
                 @endpush
 
-                <div class="text-center mt-4">
-                    <a href="{{ route('password.request') }}" class="btn btn-link">Lupa Password?</a>
-                </div>
-                <div class="text-center">
-                    <a href="{{ route('home') }}" class="btn btn-link">Kembali ke halaman utama</a>
+                <div class="login-navigation">
+                    <a href="{{ route('password.request') }}" class="login-navigation__link login-navigation__link--recovery">
+                        Lupa Password? <span aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a href="{{ route('home') }}" class="login-navigation__link login-navigation__link--home">
+                        <span aria-hidden="true">&larr;</span> Kembali ke halaman utama
+                    </a>
                 </div>
             </div>
         </div>

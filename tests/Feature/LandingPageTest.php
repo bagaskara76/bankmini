@@ -27,6 +27,8 @@ class LandingPageTest extends TestCase
             ->assertOk()
             ->assertSee('Silakan login untuk mengakses sistem')
             ->assertSee('Kembali ke halaman utama')
+            ->assertSee('login-navigation__link--recovery', false)
+            ->assertSee('login-navigation__link--home', false)
             ->assertSee(route('home'), false);
     }
 }
