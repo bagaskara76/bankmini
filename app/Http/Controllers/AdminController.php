@@ -426,7 +426,8 @@ class AdminController extends Controller
             ->orderBy('grade')
             ->orderBy('kelas')
             ->orderBy('name')
-            ->get();
+            ->paginate(25)
+            ->withQueryString();
         $pendingMemberCount = PendingMember::count();
         $gradeList = [10, 11, 12];
         $kelasList = Customer::availableKelas();

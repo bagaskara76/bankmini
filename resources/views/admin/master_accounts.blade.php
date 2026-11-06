@@ -248,6 +248,15 @@
                     </tbody>
                 </table>
             </div>
+            @if($pendingMembers->total() > 0)
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                    <small class="text-muted">
+                        Menampilkan {{ $pendingMembers->firstItem() }}–{{ $pendingMembers->lastItem() }}
+                        dari {{ $pendingMembers->total() }} nama
+                    </small>
+                    {{ $pendingMembers->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
 
         </div>
     </div>
