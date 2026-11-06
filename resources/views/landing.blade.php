@@ -25,7 +25,12 @@
         html { scroll-behavior: smooth; }
         body {
             margin: 0;
-            background: var(--paper);
+            background:
+                radial-gradient(ellipse at 8% 12%, rgba(42, 82, 152, .24), transparent 34rem),
+                radial-gradient(ellipse at 92% 88%, rgba(48, 119, 143, .19), transparent 32rem),
+                radial-gradient(ellipse at 78% 6%, rgba(125, 162, 219, .15), transparent 26rem),
+                linear-gradient(135deg, #e6edf8 0%, #f4f7fa 52%, #e8f1f2 100%);
+            background-attachment: fixed;
             color: var(--ink);
             font-family: "DM Sans", sans-serif;
             line-height: 1.65;
