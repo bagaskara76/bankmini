@@ -125,21 +125,25 @@ class AdminController extends Controller
 
     public function approveReport(Request $request, DailyReport $report)
     {
-        if ($report->status !== 'pending') {
-            return back()->with('error', 'Laporan ini tidak sedang menunggu approval.');
-        }
-
-        if ((int) $report->physical_cash !== (int) $report->system_cash) {
-            return back()->with('error', 'Laporan tidak dapat di-approve karena kas fisik tidak balance. Gunakan tombol Reject.');
-        }
-
         try {
-            DB::transaction(function () use ($report) {
-                $report->reviewed_by = Auth::id();
-                $report->status = 'approved';
-                $report->save();
+            $error = DB::transaction(function () use ($report) {
+                $lockedReport = DailyReport::query()
+                    ->lockForUpdate()
+                    ->findOrFail($report->id);
 
-                $amount = $report->system_cash;
+                if ($lockedReport->status !== 'pending') {
+                    return 'Laporan ini tidak sedang menunggu approval.';
+                }
+
+                if ((int) $lockedReport->physical_cash !== (int) $lockedReport->system_cash) {
+                    return 'Laporan tidak dapat di-approve karena kas fisik tidak balance. Gunakan tombol Reject.';
+                }
+
+                $lockedReport->reviewed_by = Auth::id();
+                $lockedReport->status = 'approved';
+                $lockedReport->save();
+
+                $amount = $lockedReport->system_cash;
                 AccountingJournal::create([
                     'transaction_id' => null,
                     'account_code' => '301',
@@ -152,7 +156,13 @@ class AdminController extends Controller
                     'type' => 'credit',
                     'amount' => $amount,
                 ]);
+
+                return null;
             });
+
+            if ($error !== null) {
+                return back()->with('error', $error);
+            }
 
             return redirect()->route('admin.verify_reports')->with('success', 'Laporan disetujui dan dipindahkan ke brankas.');
         } catch (\Exception $e) {
@@ -208,15 +218,6 @@ class AdminController extends Controller
         $reports = DailyReport::where('status', 'approved')->orderBy('report_date', 'desc')->get();
 
         return view('admin.transfer_approval', compact('reports'));
-    }
-
-    public function approveTransfer(Request $request, DailyReport $report)
-    {
-        $report->reviewed_by = Auth::id();
-        $report->status = 'approved';
-        $report->save();
-
-        return redirect()->route('admin.transfer_approval')->with('success', 'Pemindahan kas disetujui.');
     }
 
     public function storeMember(Request $request)

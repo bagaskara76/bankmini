@@ -41,7 +41,10 @@
                                 <strong>{{ optional($report->teller)->name ?? 'Teller tidak ditemukan' }}</strong>
                                 <div class="small text-muted">{{ $report->report_date->format('d M Y') }} - Rp {{ number_format($report->system_cash, 0, ',', '.') }}</div>
                             </div>
-                            <span class="badge text-bg-success">Disetujui</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge text-bg-success">Disetujui</span>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.print_report', $report->id) }}">Unduh PDF</a>
+                            </div>
                         </li>
                     @endforeach
                 </ul>

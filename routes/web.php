@@ -49,7 +49,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/reports/{report}/print', [\App\Http\Controllers\AdminController::class, 'printReport'])->name('admin.print_report');
     Route::get('/admin/dispute-resolution', [\App\Http\Controllers\AdminController::class, 'disputeResolution'])->name('admin.dispute_resolution');
     Route::get('/admin/transfer-approval', [\App\Http\Controllers\AdminController::class, 'transferApproval'])->name('admin.transfer_approval');
-    Route::post('/admin/transfer-approval/{report}/approve', [\App\Http\Controllers\AdminController::class, 'approveTransfer'])->name('admin.approve_transfer');
 });
 
 // Teller Routes

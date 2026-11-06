@@ -54,10 +54,10 @@
            @if(request()->routeIs('admin.dispute_resolution')) aria-current="page" @endif>
             Selisih Kas
         </a>
-        <a class="nav-link {{ request()->routeIs('admin.transfer_approval', 'admin.approve_transfer') ? 'active' : '' }}"
+        <a class="nav-link {{ request()->routeIs('admin.transfer_approval') ? 'active' : '' }}"
            href="{{ route('admin.transfer_approval') }}"
-           @if(request()->routeIs('admin.transfer_approval', 'admin.approve_transfer')) aria-current="page" @endif>
-            Otorisasi Pemindahan Kas
+           @if(request()->routeIs('admin.transfer_approval')) aria-current="page" @endif>
+            Kas Brankas
         </a>
     </div>
 

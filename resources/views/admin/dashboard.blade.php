@@ -151,9 +151,9 @@
             </div>
             <div class="col">
                 <article class="card admin-menu-card">
-                    <h3 class="admin-menu-card__heading"><i class="bi bi-archive admin-menu-card__icon"></i><span>Otorisasi Pemindahan Kas</span></h3>
-                    <p class="admin-menu-card__description">Setujui pemindahan kas teller ke brankas dan cetak laporan.</p>
-                    <a href="{{ route('admin.transfer_approval') }}" class="stretched-link" aria-label="Buka Otorisasi Pemindahan Kas"></a>
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-archive admin-menu-card__icon"></i><span>Kas Brankas</span></h3>
+                    <p class="admin-menu-card__description">Lihat kas yang otomatis dipindahkan setelah laporan disetujui dan unduh PDF.</p>
+                    <a href="{{ route('admin.transfer_approval') }}" class="stretched-link" aria-label="Buka Kas Brankas"></a>
                 </article>
             </div>
         </div>

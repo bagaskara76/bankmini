@@ -41,6 +41,9 @@ class AdminAccessTest extends TestCase
         }
         $verifyReportsPage->assertSee('Selisih Kas')
             ->assertDontSee('Penyelesaian Selisih Kas');
+        $verifyReportsPage->assertSee('Kas Brankas')
+            ->assertDontSee('Otorisasi Pemindahan Kas');
+        $this->post('/admin/transfer-approval/1/approve')->assertNotFound();
         $verifyReportsPage->assertDontSee('Konfigurasi Sistem');
         $this->get('/admin/config')->assertNotFound();
         $this->get('/admin/nasabah-kelas')
