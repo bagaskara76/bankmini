@@ -166,7 +166,7 @@
     </nav>
     @endauth
 
-    @if(request()->routeIs('admin.*'))
+    @if(request()->routeIs('admin.*') && !request()->routeIs('admin.dashboard'))
         <main class="container-fluid admin-layout">
             <aside class="admin-sidebar" aria-label="Menu administrator">
                 <button class="admin-sidebar-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#adminSidebarNavigation" aria-expanded="false" aria-controls="adminSidebarNavigation">

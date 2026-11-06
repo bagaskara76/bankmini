@@ -31,7 +31,7 @@ class AdminAccessTest extends TestCase
         $this->get('/admin/dashboard')
             ->assertOk()
             ->assertSee('Daftar Nasabah per Kelas')
-            ->assertSee('Menu Administrator');
+            ->assertDontSee('aria-label="Menu administrator"', false);
         $verifyReportsPage = $this->get('/admin/verify-reports')
             ->assertOk()
             ->assertSee('Menu Administrator');
