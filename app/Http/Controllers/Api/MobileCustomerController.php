@@ -7,6 +7,8 @@ use App\Models\Customer;
 use App\Models\RecoveryOtp;
 use App\Models\Transaction;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,7 +70,21 @@ class MobileCustomerController extends Controller
     public function transactions(Request $request): JsonResponse
     {
         $customer = $this->customerFor($request->user());
-        $transactions = Transaction::where('customer_id', $customer->id)
+        $validated = $request->validate([
+            'month' => ['sometimes', 'required_with:year', 'integer', 'between:1,12'],
+            'year' => ['sometimes', 'required_with:month', 'integer', 'between:2000,2100'],
+        ]);
+
+        $query = Transaction::where('customer_id', $customer->id);
+        if (isset($validated['month'], $validated['year'])) {
+            $period = Carbon::create($validated['year'], $validated['month'], 1);
+            $query->whereBetween('created_at', [
+                $period->copy()->startOfMonth(),
+                $period->copy()->endOfMonth(),
+            ]);
+        }
+
+        $transactions = $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get(['id', 'type', 'amount', 'status', 'created_at']);
@@ -82,6 +98,60 @@ class MobileCustomerController extends Controller
                 'created_at' => $transaction->created_at?->toISOString(),
             ]),
         ]);
+    }
+
+    public function monthlyTransactionReports(Request $request): JsonResponse
+    {
+        $customer = $this->customerFor($request->user());
+        $transactionsByMonth = Transaction::where('customer_id', $customer->id)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get(['type', 'amount', 'status', 'created_at'])
+            ->groupBy(fn (Transaction $transaction) => $transaction->created_at->format('Y-m'));
+
+        return response()->json([
+            'data' => $transactionsByMonth->map(function ($transactions, string $period) {
+                [$year, $month] = array_map('intval', explode('-', $period));
+                $completed = $transactions->where('status', 'completed');
+
+                return [
+                    'year' => $year,
+                    'month' => $month,
+                    'label' => Carbon::create($year, $month, 1)->locale('id')->translatedFormat('F Y'),
+                    'transaction_count' => $transactions->count(),
+                    'total_deposit' => (int) $completed->where('type', 'deposit')->sum('amount'),
+                    'total_withdrawal' => (int) $completed->where('type', 'withdrawal')->sum('amount'),
+                    'pdf_url' => route('mobile.transactions.monthly_reports.pdf', [$year, $month]),
+                ];
+            })->values(),
+        ]);
+    }
+
+    public function monthlyTransactionReportPdf(Request $request, int $year, int $month)
+    {
+        abort_unless($year >= 2000 && $year <= 2100 && $month >= 1 && $month <= 12, 404);
+
+        $customer = $this->customerFor($request->user());
+        $period = Carbon::create($year, $month, 1);
+        $transactions = Transaction::where('customer_id', $customer->id)
+            ->whereBetween('created_at', [
+                $period->copy()->startOfMonth(),
+                $period->copy()->endOfMonth(),
+            ])
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get(['id', 'type', 'amount', 'status', 'created_at']);
+        $completed = $transactions->where('status', 'completed');
+        $totalDeposit = (int) $completed->where('type', 'deposit')->sum('amount');
+        $totalWithdrawal = (int) $completed->where('type', 'withdrawal')->sum('amount');
+
+        return Pdf::loadView('mobile.monthly_transaction_report', compact(
+            'customer',
+            'period',
+            'transactions',
+            'totalDeposit',
+            'totalWithdrawal'
+        ))->download('laporan-transaksi-'.$period->format('Y-m').'.pdf');
     }
 
     public function requestPasswordOtp(Request $request): JsonResponse

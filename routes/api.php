@@ -33,6 +33,10 @@ Route::prefix('mobile')->group(function () {
         Route::get('/dashboard', [MobileCustomerController::class, 'dashboard']);
         Route::get('/profile', [MobileCustomerController::class, 'profile']);
         Route::get('/transactions', [MobileCustomerController::class, 'transactions']);
+        Route::get('/transactions/monthly-reports', [MobileCustomerController::class, 'monthlyTransactionReports']);
+        Route::get('/transactions/monthly-reports/{year}/{month}/pdf', [MobileCustomerController::class, 'monthlyTransactionReportPdf'])
+            ->whereNumber(['year', 'month'])
+            ->name('mobile.transactions.monthly_reports.pdf');
         Route::post('/logout', [MobileCustomerController::class, 'logout']);
         Route::post('/password/change', [MobileCustomerController::class, 'changePassword'])
             ->middleware('throttle:5,1');

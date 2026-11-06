@@ -136,6 +136,47 @@ class MobileCustomerApiTest extends TestCase
             ->assertJsonMissing(['amount' => 9000]);
     }
 
+    public function test_mobile_transaction_history_can_be_filtered_by_month_and_exported_as_a_monthly_pdf(): void
+    {
+        $customer = $this->createCustomer();
+        $otherCustomer = $this->createCustomer('other_customer', '1000000002');
+        $teller = User::factory()->create(['role' => 'teller']);
+        $currentMonth = now()->startOfMonth();
+        $previousMonth = $currentMonth->copy()->subMonth();
+        $deposit = $this->createTransaction($customer, $teller, 'deposit', 1200);
+        $withdrawal = $this->createTransaction($customer, $teller, 'withdrawal', 200);
+        $otherTransaction = $this->createTransaction($otherCustomer, $teller, 'deposit', 9000);
+        $deposit->forceFill(['created_at' => $previousMonth->copy()->addDays(2)])->save();
+        $withdrawal->forceFill(['created_at' => $previousMonth->copy()->addDays(5)])->save();
+        $otherTransaction->forceFill(['created_at' => $previousMonth->copy()->addDays(3)])->save();
+        $token = $customer->createToken('test')->plainTextToken;
+        $year = $previousMonth->year;
+        $month = $previousMonth->month;
+
+        $this->withToken($token)->getJson('/api/mobile/transactions?year='.$year.'&month='.$month)
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $withdrawal->id)
+            ->assertJsonPath('data.1.id', $deposit->id);
+
+        $this->withToken($token)->getJson('/api/mobile/transactions?month='.$month)
+            ->assertUnprocessable();
+
+        $this->withToken($token)->getJson('/api/mobile/transactions/monthly-reports')
+            ->assertOk()
+            ->assertJsonPath('data.0.year', $year)
+            ->assertJsonPath('data.0.month', $month)
+            ->assertJsonPath('data.0.transaction_count', 2)
+            ->assertJsonPath('data.0.total_deposit', 1200)
+            ->assertJsonPath('data.0.total_withdrawal', 200)
+            ->assertJsonMissing(['amount' => 9000]);
+
+        $this->withToken($token)->get('/api/mobile/transactions/monthly-reports/'.$year.'/'.$month.'/pdf')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'attachment; filename=laporan-transaksi-'.$year.'-'.str_pad((string) $month, 2, '0', STR_PAD_LEFT).'.pdf');
+    }
+
     public function test_authenticated_customer_can_change_password_with_current_password(): void
     {
         $customer = $this->createCustomer();
