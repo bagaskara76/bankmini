@@ -23,7 +23,7 @@
         <a class="nav-link {{ request()->routeIs('admin.data_saver', 'admin.customers.*') ? 'active' : '' }}"
            href="{{ route('admin.data_saver') }}"
            @if(request()->routeIs('admin.data_saver', 'admin.customers.*')) aria-current="page" @endif>
-            Data Saver &amp; Email OTP
+            Data Saver
         </a>
         <a class="nav-link {{ request()->routeIs('admin.nasabah_kelas') ? 'active' : '' }}"
            href="{{ route('admin.nasabah_kelas') }}"
