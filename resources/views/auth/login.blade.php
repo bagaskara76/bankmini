@@ -113,10 +113,10 @@
 
                 <div class="login-navigation">
                     <a href="{{ route('password.request') }}" class="login-navigation__link login-navigation__link--recovery">
-                        Lupa Password? <span aria-hidden="true">&rarr;</span>
+                        Lupa Password?
                     </a>
                     <a href="{{ route('home') }}" class="login-navigation__link login-navigation__link--home">
-                        <span aria-hidden="true">&larr;</span> Kembali ke halaman utama
+                        Kembali ke halaman utama
                     </a>
                 </div>
             </div>
