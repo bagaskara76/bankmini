@@ -28,8 +28,8 @@
                         <tr><th>Modal awal</th><td class="text-end">Rp {{ number_format($report->initial_capital, 0, ',', '.') }}</td></tr>
                         <tr><th>Total setoran</th><td class="text-end">Rp {{ number_format($report->total_deposit, 0, ',', '.') }}</td></tr>
                         <tr><th>Total penarikan</th><td class="text-end">Rp {{ number_format($report->total_withdrawal, 0, ',', '.') }}</td></tr>
-                        <tr><th>Kas sistem</th><td class="text-end fw-bold">Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td></tr>
-                        <tr><th>Kas fisik</th><td class="text-end fw-bold {{ (int) $report->physical_cash === (int) $report->system_cash ? 'text-success' : 'text-danger' }}">Rp {{ number_format($report->physical_cash, 0, ',', '.') }}</td></tr>
+                        <tr><th>Laporan web (kas sistem)</th><td class="text-end fw-bold">Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td></tr>
+                        <tr><th>Kas fisik hasil hitung teller</th><td class="text-end fw-bold {{ (int) $report->physical_cash === (int) $report->system_cash ? 'text-success' : 'text-danger' }}">Rp {{ number_format($report->physical_cash, 0, ',', '.') }}</td></tr>
                         <tr><th>Selisih</th><td class="text-end {{ (int) $report->physical_cash === (int) $report->system_cash ? 'text-success' : 'text-danger' }}">Rp {{ number_format($report->physical_cash - $report->system_cash, 0, ',', '.') }}</td></tr>
                     </tbody>
                 </table>

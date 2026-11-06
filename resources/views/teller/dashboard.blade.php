@@ -44,8 +44,9 @@
         <div class="card h-100"><div class="card-body">
             <h5 class="fw-bold">Laporan Kas Harian</h5>
             <div class="row text-center mb-3">
-                <div class="col-6"><small class="text-muted">Kas Sistem</small><div class="fs-4 fw-bold">Rp {{ number_format($dailyReport->system_cash, 0, ',', '.') }}</div></div>
-                <div class="col-6"><small class="text-muted">Status</small><div class="fs-4 fw-bold">{{ ucfirst($dailyReport->status) }}</div></div>
+                <div class="col-md-4"><small class="text-muted">Laporan Web (Kas Sistem)</small><div class="fs-5 fw-bold">Rp {{ number_format($dailyReport->system_cash, 0, ',', '.') }}</div></div>
+                <div class="col-md-4"><small class="text-muted">Kas Fisik Teller</small><div class="fs-5 fw-bold">{{ $dailyReport->status === 'draft' ? 'Diisi saat mengajukan' : 'Rp '.number_format($dailyReport->physical_cash, 0, ',', '.') }}</div></div>
+                <div class="col-md-4"><small class="text-muted">Status</small><div class="fs-5 fw-bold">{{ ucfirst($dailyReport->status) }}</div></div>
             </div>
             @if($dailyReport->status === 'rejected')
             <div class="alert alert-danger">
@@ -58,14 +59,16 @@
             </div>
             <form method="POST" action="{{ route('teller.daily_report.submit') }}">
                 @csrf
-                <label for="physical_cash" class="form-label">Kas fisik setelah diperiksa ulang</label>
+                <label for="physical_cash" class="form-label">Kas fisik setelah dihitung ulang</label>
                 <div class="input-group mb-2"><span class="input-group-text">Rp</span><input id="physical_cash" type="number" name="physical_cash" min="0" step="1" class="form-control" value="{{ old('physical_cash', $dailyReport->physical_cash) }}" required></div>
                 <button class="btn btn-warning">Kirim Ulang Laporan</button>
             </form>
             @elseif($dailyReport->status === 'draft')
             <form method="POST" action="{{ route('teller.daily_report.submit') }}">
                 @csrf
-                <p class="text-muted mb-2">Kas fisik otomatis dihitung dari modal awal dan seluruh transaksi hari ini.</p>
+                <p class="text-muted mb-2">Hitung uang tunai yang benar-benar ada di teller, lalu masukkan jumlahnya. Nilai ini akan dibandingkan Admin dengan laporan web.</p>
+                <label for="physical_cash" class="form-label">Jumlah kas fisik di teller</label>
+                <div class="input-group mb-3"><span class="input-group-text">Rp</span><input id="physical_cash" type="number" name="physical_cash" min="0" step="1" class="form-control" value="{{ old('physical_cash') }}" required></div>
                 <button class="btn btn-success">Ajukan Laporan</button>
             </form>
             @else

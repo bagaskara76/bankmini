@@ -74,18 +74,16 @@ class TellerController extends Controller
             return back()->with('error', 'Laporan ini sudah diajukan atau diproses.');
         }
 
-        $physicalCash = $report->status === 'rejected'
-            ? $request->validate([
-                'physical_cash' => 'required|integer|min:0',
-            ], [
-                'physical_cash.required' => 'Kas fisik hasil pemeriksaan ulang wajib diisi.',
-                'physical_cash.integer' => 'Kas fisik harus berupa bilangan bulat.',
-                'physical_cash.min' => 'Kas fisik tidak boleh kurang dari 0.',
-            ])['physical_cash']
-            : $report->system_cash;
+        $validated = $request->validate([
+            'physical_cash' => 'required|integer|min:0',
+        ], [
+            'physical_cash.required' => 'Kas fisik hasil penghitungan wajib diisi.',
+            'physical_cash.integer' => 'Kas fisik harus berupa bilangan bulat.',
+            'physical_cash.min' => 'Kas fisik tidak boleh kurang dari 0.',
+        ]);
 
-        $report->physical_cash = $physicalCash;
-        $this->refreshSystemCash($report);
+        $report->system_cash = $report->initial_capital + $report->total_deposit - $report->total_withdrawal;
+        $report->physical_cash = $validated['physical_cash'];
         $report->status = 'pending';
         $report->reviewed_by = null;
         $report->rejection_note = null;

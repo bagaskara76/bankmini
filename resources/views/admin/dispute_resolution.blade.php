@@ -10,7 +10,10 @@
                     @foreach($reports as $report)
                         <li class="list-group-item">
                             <strong>{{ optional($report->teller)->name }}</strong> - {{ $report->report_date->format('d M Y') }}
-                            <div class="small text-muted">Kas sistem: Rp {{ number_format($report->system_cash, 0, ',', '.') }}, kas fisik: Rp {{ number_format($report->physical_cash, 0, ',', '.') }}</div>
+                            <div class="small text-muted">Laporan web (kas sistem): Rp {{ number_format($report->system_cash, 0, ',', '.') }}</div>
+                            <div class="small text-muted">Kas fisik teller: Rp {{ number_format($report->physical_cash, 0, ',', '.') }}</div>
+                            <div class="small text-danger">Selisih (fisik - sistem): Rp {{ number_format($report->physical_cash - $report->system_cash, 0, ',', '.') }}</div>
+                            <div class="mt-2"><strong>Catatan penolakan:</strong> {{ $report->rejection_note ?: 'Admin tidak memberikan catatan.' }}</div>
                         </li>
                     @endforeach
                 </ul>
