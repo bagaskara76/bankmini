@@ -29,6 +29,9 @@ class LandingPageTest extends TestCase
             ->assertSee('Kembali ke halaman utama')
             ->assertSee('login-navigation__link--recovery', false)
             ->assertSee('login-navigation__link--home', false)
+            ->assertSee('password-toggle', false)
+            ->assertSee('aria-label="Tampilkan password"', false)
+            ->assertDontSee('>Tampilkan</button>', false)
             ->assertSee(route('home'), false);
     }
 }
