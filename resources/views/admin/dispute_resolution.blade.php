@@ -3,7 +3,7 @@
 @section('content')
 <div class="row">
     <div class="col-md-12 mt-4">
-        <h3><i class="bi bi-search"></i> Penyelesaian Selisih Kas</h3>
+        <h3><i class="bi bi-search"></i> Selisih Kas</h3>
         <div class="card p-3 mt-3">
             @if($reports->isNotEmpty())
                 <ul class="list-group">

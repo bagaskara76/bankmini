@@ -52,7 +52,7 @@
         <a class="nav-link {{ request()->routeIs('admin.dispute_resolution') ? 'active' : '' }}"
            href="{{ route('admin.dispute_resolution') }}"
            @if(request()->routeIs('admin.dispute_resolution')) aria-current="page" @endif>
-            Penyelesaian Selisih Kas
+            Selisih Kas
         </a>
         <a class="nav-link {{ request()->routeIs('admin.transfer_approval', 'admin.approve_transfer') ? 'active' : '' }}"
            href="{{ route('admin.transfer_approval') }}"

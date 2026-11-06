@@ -31,6 +31,7 @@ class AdminAccessTest extends TestCase
         $this->get('/admin/dashboard')
             ->assertOk()
             ->assertSee('Daftar Nasabah per Kelas')
+            ->assertSee('Selisih Kas')
             ->assertDontSee('aria-label="Menu administrator"', false);
         $verifyReportsPage = $this->get('/admin/verify-reports')
             ->assertOk()
@@ -38,6 +39,8 @@ class AdminAccessTest extends TestCase
         foreach ($sidebarRoutes as $routeName) {
             $verifyReportsPage->assertSee(route($routeName), false);
         }
+        $verifyReportsPage->assertSee('Selisih Kas')
+            ->assertDontSee('Penyelesaian Selisih Kas');
         $verifyReportsPage->assertDontSee('Konfigurasi Sistem');
         $this->get('/admin/config')->assertNotFound();
         $this->get('/admin/nasabah-kelas')
