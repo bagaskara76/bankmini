@@ -29,7 +29,7 @@
 
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card h-100"><div class="card-body">
+        <div class="card"><div class="card-body">
             <h5 class="fw-bold">Modal Awal Hari Ini</h5>
             <p class="fs-4 mb-3">Rp {{ number_format($dailyReport->initial_capital, 0, ',', '.') }}</p>
             @if($dailyReport->status === 'draft')
