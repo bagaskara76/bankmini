@@ -15,8 +15,30 @@ class AdminAccessTest extends TestCase
         $admin = User::factory()->make(['role' => 'admin']);
         $this->actingAs($admin);
 
-        $this->get('/admin/dashboard')->assertOk()->assertSee('Daftar Nasabah per Kelas');
-        $this->get('/admin/verify-reports')->assertOk();
+        $sidebarRoutes = [
+            'admin.dashboard',
+            'admin.users',
+            'admin.members.index',
+            'admin.data_saver',
+            'admin.nasabah_kelas',
+            'admin.verify_reports',
+            'admin.monthly_reports',
+            'admin.audit_journal',
+            'admin.dispute_resolution',
+            'admin.transfer_approval',
+            'admin.config',
+        ];
+
+        $this->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Daftar Nasabah per Kelas')
+            ->assertSee('Menu Administrator');
+        $verifyReportsPage = $this->get('/admin/verify-reports')
+            ->assertOk()
+            ->assertSee('Menu Administrator');
+        foreach ($sidebarRoutes as $routeName) {
+            $verifyReportsPage->assertSee(route($routeName), false);
+        }
         $this->get('/admin/nasabah-kelas')
             ->assertOk()
             ->assertDontSee('Rangkuman Data Nasabah per Kelas')

@@ -58,6 +58,83 @@
             background-color: #1e3c72;
             box-shadow: 0 4px 10px rgba(42, 82, 152, 0.4);
         }
+        .admin-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            max-width: 1440px;
+            min-height: calc(100vh - 76px);
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+        }
+        .admin-sidebar {
+            flex: 0 0 250px;
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .admin-sidebar__title {
+            margin: 0 0 .75rem;
+            color: #64748b;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+        .admin-sidebar .nav-link {
+            display: block;
+            padding: .6rem .75rem;
+            border-radius: 8px;
+            color: #334155 !important;
+            font-size: .9rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link:focus {
+            background: #eff6ff;
+            color: #1e3c72 !important;
+        }
+        .admin-sidebar .nav-link.active {
+            background: #2a5298;
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .admin-sidebar__group + .admin-sidebar__group {
+            margin-top: 1.25rem;
+        }
+        .admin-content {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .admin-sidebar-toggle {
+            width: 100%;
+            margin-bottom: .75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            color: #1e3c72;
+            padding: .65rem .75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        @media (max-width: 991.98px) {
+            .admin-layout {
+                display: block;
+                padding-top: 1rem;
+            }
+            .admin-sidebar {
+                position: static;
+                max-height: none;
+                margin-bottom: 1rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -89,9 +166,25 @@
     </nav>
     @endauth
 
-    <main class="container">
-        @yield('content')
-    </main>
+    @if(request()->routeIs('admin.*'))
+        <main class="container-fluid admin-layout">
+            <aside class="admin-sidebar" aria-label="Menu administrator">
+                <button class="admin-sidebar-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#adminSidebarNavigation" aria-expanded="false" aria-controls="adminSidebarNavigation">
+                    Menu Administrator
+                </button>
+                <div class="collapse d-lg-block" id="adminSidebarNavigation">
+                    @include('admin.partials.sidebar')
+                </div>
+            </aside>
+            <section class="admin-content">
+                @yield('content')
+            </section>
+        </main>
+    @else
+        <main class="container">
+            @yield('content')
+        </main>
+    @endif
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
