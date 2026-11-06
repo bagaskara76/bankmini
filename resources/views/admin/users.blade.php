@@ -3,9 +3,6 @@
 @section('content')
 <div class="row">
     <div class="col-md-12 mt-4">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mb-3">
-            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
-        </a>
         <h3><i class="bi bi-people"></i> Manajemen User</h3>
         <p class="text-muted">Buat dan kelola akun internal. Akun nasabah dan akun yang sudah dihapus tidak ditampilkan di sini.</p>
 

@@ -3,7 +3,6 @@
 @section('content')
 <div class="row">
     <div class="col-12 mt-4">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
         <h3><i class="bi bi-calendar-month"></i> Laporan Bulanan</h3>
 
         <div class="card p-3 mt-3 mb-4">

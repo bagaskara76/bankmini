@@ -100,9 +100,6 @@
 @section('content')
 <div class="row mt-4">
     <div class="col-12 mb-3 d-flex align-items-center gap-3">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> Dashboard
-        </a>
         <div>
             <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah per Kelas</h3>
             <p class="text-muted mb-0 small">Daftar nama nasabah aktif dikelompokkan berdasarkan tingkat dan kelas</p>

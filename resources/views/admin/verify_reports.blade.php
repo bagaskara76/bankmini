@@ -3,7 +3,6 @@
 @section('content')
 <div class="row">
     <div class="col-md-12 mt-4">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
         <h3><i class="bi bi-file-earmark-check"></i> Verifikasi Laporan Harian</h3>
 
         @if(session('success'))

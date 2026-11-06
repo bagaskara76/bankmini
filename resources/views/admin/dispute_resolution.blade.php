@@ -3,7 +3,6 @@
 @section('content')
 <div class="row">
     <div class="col-md-12 mt-4">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
         <h3><i class="bi bi-search"></i> Penyelesaian Selisih Kas</h3>
         <div class="card p-3 mt-3">
             @if($reports->isNotEmpty())

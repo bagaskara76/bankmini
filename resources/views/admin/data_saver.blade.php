@@ -27,7 +27,6 @@
 @section('content')
 <div class="row">
     <div class="col-md-12 mt-4">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mb-3">Kembali ke Dashboard</a>
         <h3>Data Saver</h3>
         <p class="text-muted">Daftar nasabah yang sudah diaktifkan dan memiliki akun rekening.</p>
 
