@@ -598,11 +598,6 @@ class AdminController extends Controller
             ->with('success', 'Akun nasabah dihapus dan histori transaksinya tetap tersimpan.');
     }
 
-    public function config()
-    {
-        return view('admin.config');
-    }
-
     public function auditJournal()
     {
         return view('admin.audit_journal');

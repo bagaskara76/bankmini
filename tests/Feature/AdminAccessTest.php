@@ -26,7 +26,6 @@ class AdminAccessTest extends TestCase
             'admin.audit_journal',
             'admin.dispute_resolution',
             'admin.transfer_approval',
-            'admin.config',
         ];
 
         $this->get('/admin/dashboard')
@@ -39,6 +38,8 @@ class AdminAccessTest extends TestCase
         foreach ($sidebarRoutes as $routeName) {
             $verifyReportsPage->assertSee(route($routeName), false);
         }
+        $verifyReportsPage->assertDontSee('Konfigurasi Sistem');
+        $this->get('/admin/config')->assertNotFound();
         $this->get('/admin/nasabah-kelas')
             ->assertOk()
             ->assertDontSee('Rangkuman Data Nasabah per Kelas')

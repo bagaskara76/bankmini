@@ -61,12 +61,4 @@
         </a>
     </div>
 
-    <div class="admin-sidebar__group">
-        <p class="admin-sidebar__title">Sistem</p>
-        <a class="nav-link {{ request()->routeIs('admin.config') ? 'active' : '' }}"
-           href="{{ route('admin.config') }}"
-           @if(request()->routeIs('admin.config')) aria-current="page" @endif>
-            Konfigurasi Sistem
-        </a>
-    </div>
 </nav>

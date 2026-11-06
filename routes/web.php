@@ -38,7 +38,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/customers/{customer}/block', [\App\Http\Controllers\AdminController::class, 'blockCustomer'])->name('admin.customers.block');
     Route::post('/admin/customers/{customer}/unblock', [\App\Http\Controllers\AdminController::class, 'unblockCustomer'])->name('admin.customers.unblock');
     Route::delete('/admin/customers/{customer}', [\App\Http\Controllers\AdminController::class, 'deleteCustomer'])->name('admin.customers.delete');
-    Route::get('/admin/config', [\App\Http\Controllers\AdminController::class, 'config'])->name('admin.config');
     Route::get('/admin/audit-journal', [\App\Http\Controllers\AdminController::class, 'auditJournal'])->name('admin.audit_journal');
     Route::get('/admin/nasabah-kelas', [\App\Http\Controllers\AdminController::class, 'nasabahKelas'])->name('admin.nasabah_kelas');
     Route::get('/admin/verify-reports', [\App\Http\Controllers\AdminController::class, 'verifyReports'])->name('admin.verify_reports');
