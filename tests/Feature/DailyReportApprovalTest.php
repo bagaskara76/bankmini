@@ -48,12 +48,28 @@ class DailyReportApprovalTest extends TestCase
         ]);
         $this->assertSame($existingVaultEntries + 2, AccountingJournal::whereNull('transaction_id')->count());
 
+        $newerReport = DailyReport::create([
+            'teller_id' => $teller->id,
+            'report_date' => now()->toDateString(),
+            'initial_capital' => 100000,
+            'total_deposit' => 50000,
+            'total_withdrawal' => 10000,
+            'system_cash' => 140000,
+            'physical_cash' => 140000,
+            'status' => 'approved',
+        ]);
+        $newerReport->forceFill(['updated_at' => now()->addSecond()])->save();
+
         $this->get(route('admin.transfer_approval'))
             ->assertOk()
             ->assertSee('Kas Brankas')
             ->assertSee('Teller Brankas')
             ->assertSee('Unduh PDF')
-            ->assertSee(route('admin.print_report', $report), false);
+            ->assertSee(route('admin.print_report', $report), false)
+            ->assertSeeInOrder([
+                route('admin.print_report', $newerReport),
+                route('admin.print_report', $report),
+            ]);
 
         $this->get(route('admin.monthly_reports', [
             'month' => now()->month,
@@ -62,7 +78,11 @@ class DailyReportApprovalTest extends TestCase
             ->assertOk()
             ->assertSee('Teller Brankas')
             ->assertSee('Unduh PDF')
-            ->assertSee(route('admin.print_report', $report), false);
+            ->assertSee(route('admin.print_report', $report), false)
+            ->assertSeeInOrder([
+                route('admin.print_report', $newerReport),
+                route('admin.print_report', $report),
+            ]);
 
         $this->get(route('admin.print_report', $report))
             ->assertOk()

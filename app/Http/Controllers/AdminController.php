@@ -109,7 +109,8 @@ class AdminController extends Controller
             ->whereBetween('report_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->where('status', 'approved')
             ->orderByDesc('report_date')
-            ->orderBy('teller_id')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
             ->get();
 
         $transactionDetails = $includeTransactions
@@ -215,7 +216,11 @@ class AdminController extends Controller
 
     public function transferApproval()
     {
-        $reports = DailyReport::where('status', 'approved')->orderBy('report_date', 'desc')->get();
+        $reports = DailyReport::where('status', 'approved')
+            ->orderByDesc('report_date')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
 
         return view('admin.transfer_approval', compact('reports'));
     }
