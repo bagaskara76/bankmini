@@ -138,7 +138,7 @@
     </style>
     @stack('styles')
 </head>
-<body>
+<body class="@yield('body-class')">
     @auth
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
         <div class="container">

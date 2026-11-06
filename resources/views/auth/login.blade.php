@@ -1,11 +1,121 @@
 @extends('layouts.app')
 
+@section('body-class', 'login-body')
+
 @push('styles')
 <style>
+    body.login-body {
+        background:
+            radial-gradient(ellipse at 12% 8%, rgba(42, 82, 152, .09), transparent 34rem),
+            radial-gradient(ellipse at 88% 92%, rgba(30, 60, 114, .06), transparent 30rem),
+            #f3f6fa;
+    }
+
+    body.login-body main.container {
+        width: 100%;
+        max-width: none;
+        padding: 2rem 1rem;
+    }
+
+    .login-page {
+        display: grid;
+        min-height: calc(100vh - 4rem);
+        place-items: center;
+    }
+
+    .login-panel {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    .login-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(226, 232, 240, .9);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 20px 55px rgba(30, 60, 114, .12);
+    }
+
+    .login-card::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 4px;
+        background: linear-gradient(90deg, #1e3c72, #4d79bd);
+        content: "";
+    }
+
+    .login-card .card-body {
+        padding: 2.75rem 2.5rem;
+    }
+
+    .login-logo {
+        display: inline-grid;
+        width: 112px;
+        height: 112px;
+        place-items: center;
+        border: 1px solid #e8eef8;
+        border-radius: 50%;
+        background: #f7f9fd;
+    }
+
+    .login-logo img {
+        width: 82px;
+        height: 82px;
+        object-fit: contain;
+    }
+
+    .login-heading {
+        margin-top: 1rem;
+        color: #1f2937;
+        font-weight: 700;
+        letter-spacing: -.025em;
+    }
+
+    .login-form .form-label {
+        margin-bottom: .45rem;
+        color: #334155;
+        font-size: .92rem;
+        font-weight: 600;
+    }
+
+    .login-form .form-control {
+        min-height: 46px;
+        border-color: #dbe3ee;
+        border-radius: 9px;
+    }
+
+    .login-form .form-control:focus {
+        border-color: #7da2db;
+        box-shadow: 0 0 0 .2rem rgba(42, 82, 152, .12);
+    }
+
+    .login-form .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .login-form .password-toggle {
+        border-color: #dbe3ee;
+        border-top-right-radius: 9px;
+        border-bottom-right-radius: 9px;
+        background: #fff;
+        color: #64748b;
+    }
+
+    .login-form .btn-primary {
+        min-height: 46px;
+        box-shadow: 0 5px 12px rgba(42, 82, 152, .16);
+    }
+
+    .login-footer {
+        color: #64748b;
+    }
+
     .login-navigation {
         display: grid;
         gap: .75rem;
-        margin-top: 1.5rem;
+        margin-top: 1.25rem;
     }
 
     .login-navigation__link {
@@ -60,17 +170,33 @@
         width: 1.2rem;
         height: 1.2rem;
     }
+
+    @media (max-width: 575.98px) {
+        body.login-body main.container {
+            padding: 1rem;
+        }
+
+        .login-page {
+            min-height: calc(100vh - 2rem);
+        }
+
+        .login-card .card-body {
+            padding: 2.25rem 1.5rem;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="row justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="col-md-5">
-        <div class="card shadow-lg">
-            <div class="card-body p-5">
+<div class="login-page">
+    <div class="login-panel">
+        <div class="card login-card">
+            <div class="card-body">
                 <div class="text-center mb-4">
-                    <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMK Negeri 1 Bantul" class="mb-3" style="width: 100px; height: 100px; object-fit: contain;">
-                    <h3 class="font-weight-bold">E-Teller Bank Mini</h3>
+                    <div class="login-logo mb-3">
+                        <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMK Negeri 1 Bantul">
+                    </div>
+                    <h3 class="login-heading">E-Teller Bank Mini</h3>
                     <p class="text-muted">Silakan login untuk mengakses sistem</p>
                 </div>
 
@@ -86,7 +212,7 @@
                     </div>
                 @endif
 
-                <form action="/login" method="POST">
+                <form action="/login" method="POST" class="login-form">
                     @csrf
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
@@ -143,7 +269,7 @@
                 </div>
             </div>
         </div>
-        <div class="text-center mt-4 text-muted small">
+        <div class="login-footer text-center mt-4 small">
             &copy; 2026 Uji Kompetensi Keahlian - Rekayasa Perangkat Lunak
         </div>
     </div>
