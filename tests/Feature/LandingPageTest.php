@@ -15,7 +15,10 @@ class LandingPageTest extends TestCase
             ->assertSee('>Login <span', false)
             ->assertSee('Download Aplikasi Android')
             ->assertSee(asset('app-release.apk'), false)
-            ->assertSee(route('login'), false);
+            ->assertSee(route('login'), false)
+            ->assertDontSee('Transaksi tercatat')
+            ->assertDontSee('Setor &bull; Tarik &bull; Catat', false)
+            ->assertDontSee('✦');
     }
 
     public function test_login_page_remains_available_from_the_landing_page(): void

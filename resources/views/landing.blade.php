@@ -93,18 +93,12 @@
         }
         .card-top, .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .card-label { color: rgba(255,255,255,.68); font-size: 11px; font-weight: 700; letter-spacing: .12em; }
-        .card-mark { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 13px; font-size: 21px; }
         .card-title { margin: 29px 0 5px; font-family: "Manrope", sans-serif; font-size: 23px; font-weight: 800; }
         .card-subtitle { margin: 0; color: rgba(255,255,255,.72); font-size: 13px; }
         .card-divider { height: 1px; margin: 27px 0 18px; background: rgba(255,255,255,.2); }
         .card-bottom { align-items: end; }
         .card-bottom strong { display: block; margin-top: 5px; font-size: 15px; }
         .card-chip { width: 38px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#d9c88d,#a99452); }
-        .floating-note { position: absolute; z-index: 2; right: -10px; bottom: 45px; display: flex; align-items: center; gap: 12px; padding: 15px 18px; border: 1px solid var(--line); border-radius: 13px; background: white; box-shadow: 0 13px 35px rgba(23,46,53,.1); }
-        .note-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--mint); color: var(--green); font-size: 18px; }
-        .floating-note strong, .floating-note small { display: block; }
-        .floating-note strong { font-size: 13px; }
-        .floating-note small { color: var(--muted); font-size: 11px; }
         .section { padding: 78px 0; }
         .section-soft { background: #eef3fb; }
         .section-heading { max-width: 680px; margin: 0 auto 42px; text-align: center; }
@@ -152,7 +146,6 @@
             .visual { min-height: 310px; }
             .visual-glow { width: 280px; height: 280px; }
             .account-card { padding: 23px; }
-            .floating-note { right: 0; bottom: 15px; }
             .section { padding: 58px 0; }
             .feature-grid, .steps { grid-template-columns: 1fr; }
             .feature-card { min-height: auto; }
@@ -198,19 +191,14 @@
                     <div class="account-card">
                         <div class="card-top">
                             <span class="card-label">BANK MINI SEKOLAH</span>
-                            <span class="card-mark" aria-hidden="true">✦</span>
                         </div>
                         <p class="card-title">Tabungan Siswa</p>
                         <p class="card-subtitle">Belajar menabung dengan tertib</p>
                         <div class="card-divider"></div>
                         <div class="card-bottom">
-                            <div><span class="card-label">LAYANAN</span><strong>Setor &bull; Tarik &bull; Catat</strong></div>
+                            <div><span class="card-label">LAYANAN</span><strong>Setor &bull; Tarik</strong></div>
                             <span class="card-chip" aria-hidden="true"></span>
                         </div>
-                    </div>
-                    <div class="floating-note">
-                        <span class="note-icon" aria-hidden="true">↗</span>
-                        <span><strong>Transaksi tercatat</strong><small>Riwayat tersimpan di aplikasi</small></span>
                     </div>
                 </div>
             </div>
