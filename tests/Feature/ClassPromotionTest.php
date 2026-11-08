@@ -34,7 +34,6 @@ class ClassPromotionTest extends TestCase
                 'source_grade' => 10,
                 'source_class' => 'RPL 1',
                 'customer_ids' => [$promoted->id],
-                'destination_class' => 'RPL 2',
             ])
             ->assertRedirect(route('admin.class_promotion', ['grade' => 10, 'source_class' => 'RPL 1']))
             ->assertSessionHas('success');
@@ -42,7 +41,7 @@ class ClassPromotionTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'id' => $promoted->id,
             'grade' => 11,
-            'kelas' => 'RPL 2',
+            'kelas' => 'RPL 1',
             'is_graduated' => false,
         ]);
         $this->assertDatabaseHas('customers', [
@@ -96,7 +95,7 @@ class ClassPromotionTest extends TestCase
             ->assertSee('Nasabah Lulus / Alumni');
     }
 
-    public function test_promotion_is_rejected_when_destination_class_is_full(): void
+    public function test_promotion_is_rejected_when_matching_destination_class_is_full(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $student = User::factory()->create(['role' => 'customer']);
@@ -119,15 +118,37 @@ class ClassPromotionTest extends TestCase
                 'source_grade' => 10,
                 'source_class' => 'RPL 1',
                 'customer_ids' => [$customer->id],
-                'destination_class' => 'RPL 2',
             ])
             ->assertRedirect(route('admin.class_promotion', ['grade' => 10, 'source_class' => 'RPL 1']))
-            ->assertSessionHasErrors('destination_class');
+            ->assertSessionHasErrors('source_class');
 
         $this->assertDatabaseHas('customers', [
             'id' => $customer->id,
             'grade' => 10,
             'kelas' => 'RPL 1',
+            'is_graduated' => false,
+        ]);
+    }
+
+    public function test_lps_two_students_are_automatically_placed_in_lps_one_when_promoted_to_grade_twelve(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createCustomer($student, '1000000030', 'QR-LPS-2', 11, 'LPS 2');
+
+        $this->actingAs($admin)
+            ->post(route('admin.class_promotion.process'), [
+                'source_grade' => 11,
+                'source_class' => 'LPS 2',
+                'customer_ids' => [$customer->id],
+            ])
+            ->assertRedirect(route('admin.class_promotion', ['grade' => 11, 'source_class' => 'LPS 2']))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'grade' => 12,
+            'kelas' => 'LPS 1',
             'is_graduated' => false,
         ]);
     }

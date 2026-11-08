@@ -43,8 +43,11 @@
                 <ul class="small mb-0 ps-3">
                     <li>Siswa yang tidak dicentang tetap terdaftar di kelas asal.</li>
                     @if($destinationGrade)
-                        <li>Siswa yang dicentang akan masuk ke kelas tujuan tingkat {{ $destinationGrade }}.</li>
+                        <li>Rombel tujuan ditentukan otomatis mengikuti rombel asal.</li>
                         <li>Kapasitas setiap rombel tujuan maksimal {{ \App\Models\Customer::MAX_CLASS_SIZE }} siswa.</li>
+                        @if($sourceClass === 'LPS 2' && $destinationClass === 'LPS 1')
+                            <li>Siswa kelas LPS 2 akan diarahkan ke LPS 1 karena tidak tersedia rombel LPS 2 di tingkat {{ $destinationGrade }}.</li>
+                        @endif
                     @else
                         <li>Siswa kelas 12 yang dicentang akan ditandai lulus dan tetap tercatat pada kelas terakhirnya.</li>
                     @endif
@@ -94,25 +97,19 @@
                 </div>
                 <div class="d-flex flex-wrap gap-2 align-items-end">
                     @if($destinationGrade)
-                        <div>
-                            <label for="destination_class" class="form-label small fw-semibold mb-1">Rombel tujuan</label>
-                            <select id="destination_class" name="destination_class" class="form-select form-select-sm" required>
-                                <option value="">Pilih kelas tujuan</option>
-                                @foreach($destinationClasses as $destinationClass)
-                                    @php
-                                        $occupied = (int) ($destinationCounts[$destinationClass] ?? 0);
-                                        $remaining = \App\Models\Customer::MAX_CLASS_SIZE - $occupied;
-                                        $isFull = $remaining <= 0;
-                                    @endphp
-                                    <option value="{{ $destinationClass }}"
-                                        data-remaining="{{ max(0, $remaining) }}"
-                                        @selected(old('destination_class') === $destinationClass)
-                                        @disabled($isFull)>
-                                        Kelas {{ $destinationGrade }} {{ $destinationClass }}
-                                        ({{ $occupied }}/{{ \App\Models\Customer::MAX_CLASS_SIZE }} terisi, sisa {{ max(0, $remaining) }})
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="small text-end">
+                            <div class="text-muted">Rombel tujuan otomatis</div>
+                            <div class="fw-semibold">
+                                @if($destinationClass)
+                                    Kelas {{ $destinationGrade }} {{ $destinationClass }}
+                                    <span class="text-muted fw-normal">
+                                        ({{ $destinationCount }}/{{ \App\Models\Customer::MAX_CLASS_SIZE }} terisi,
+                                        sisa {{ max(0, \App\Models\Customer::MAX_CLASS_SIZE - $destinationCount) }})
+                                    </span>
+                                @else
+                                    Belum tersedia
+                                @endif
+                            </div>
                         </div>
                         <button class="btn btn-primary btn-sm promotion-submit" type="submit">Proses Kenaikan Kelas</button>
                     @else
@@ -122,9 +119,9 @@
                 </div>
             </div>
 
-            @if($destinationGrade)
-                <div id="capacityWarning" class="alert alert-warning rounded-0 mb-0 py-2 d-none" role="status">
-                    Jumlah siswa yang dipilih melebihi sisa kursi rombel tujuan. Pilih rombel lain atau kurangi pilihan.
+            @if($destinationGrade && $destinationClass)
+                <div class="px-3 py-2 small bg-light border-bottom">
+                    Siswa yang dicentang akan masuk ke kelas {{ $destinationGrade }} {{ $destinationClass }} secara otomatis.
                 </div>
             @endif
 
@@ -177,8 +174,6 @@
     const selectedCount = document.getElementById('selectedCount');
     const selectAll = document.getElementById('selectAll');
     const submitButton = document.querySelector('.promotion-submit');
-    const destinationSelect = document.getElementById('destination_class');
-    const capacityWarning = document.getElementById('capacityWarning');
     const gradeFilter = document.getElementById('grade');
     const sourceFilter = document.getElementById('sourceFilter');
 
@@ -192,15 +187,10 @@
         selectedCount.textContent = selected;
         selectAll.checked = studentCheckboxes.length > 0 && selected === studentCheckboxes.length;
         selectAll.indeterminate = selected > 0 && selected < studentCheckboxes.length;
-        const selectedOption = destinationSelect?.selectedOptions[0];
-        const exceedsCapacity = Boolean(selected && selectedOption?.value &&
-            selected > Number(selectedOption.dataset.remaining));
-        if (capacityWarning) capacityWarning.classList.toggle('d-none', !exceedsCapacity);
-        submitButton.disabled = selected === 0 || exceedsCapacity || Boolean(destinationSelect && !selectedOption?.value);
+        submitButton.disabled = selected === 0;
     }
 
     studentCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
-    destinationSelect?.addEventListener('change', updateSelection);
     selectAll.addEventListener('change', () => {
         studentCheckboxes.forEach((checkbox) => { checkbox.checked = selectAll.checked; });
         updateSelection();

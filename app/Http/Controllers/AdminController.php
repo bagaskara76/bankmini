@@ -682,18 +682,15 @@ class AdminController extends Controller
             : collect();
 
         $destinationGrade = $grade < 12 ? $grade + 1 : null;
-        $destinationClasses = $destinationGrade
-            ? Customer::availableKelas((string) $destinationGrade)
-            : [];
-        $destinationCounts = $destinationGrade
+        $destinationClass = $this->destinationClassFor($sourceClass, $destinationGrade);
+        $destinationCount = $destinationGrade && $destinationClass
             ? Customer::query()
                 ->where('grade', $destinationGrade)
+                ->where('kelas', $destinationClass)
                 ->where('is_graduated', false)
                 ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
-                ->selectRaw('kelas, COUNT(*) as total')
-                ->groupBy('kelas')
-                ->pluck('total', 'kelas')
-            : collect();
+                ->count()
+            : 0;
 
         return view('admin.class_promotion', compact(
             'grade',
@@ -701,8 +698,8 @@ class AdminController extends Controller
             'sourceClasses',
             'customers',
             'destinationGrade',
-            'destinationClasses',
-            'destinationCounts'
+            'destinationClass',
+            'destinationCount'
         ));
     }
 
@@ -724,17 +721,14 @@ class AdminController extends Controller
 
         $sourceGrade = (int) $validated['source_grade'];
         $destinationGrade = $sourceGrade < 12 ? $sourceGrade + 1 : null;
-        if ($destinationGrade) {
-            $validated = array_merge($validated, $request->validate([
-                'destination_class' => [
-                    'required',
-                    'string',
-                    'in:'.implode(',', Customer::availableKelas((string) $destinationGrade)),
-                ],
-            ]));
+        $destinationClass = $this->destinationClassFor($validated['source_class'], $destinationGrade);
+        if ($destinationGrade && ! $destinationClass) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'source_class' => 'Tidak ditemukan rombel tujuan yang sesuai untuk kenaikan kelas ini.',
+            ]);
         }
 
-        $processedCount = DB::transaction(function () use ($validated, $sourceGrade, $destinationGrade) {
+        $processedCount = DB::transaction(function () use ($validated, $sourceGrade, $destinationGrade, $destinationClass) {
             $customers = Customer::query()
                 ->whereIn('id', $validated['customer_ids'])
                 ->where('grade', $sourceGrade)
@@ -751,7 +745,6 @@ class AdminController extends Controller
             }
 
             if ($destinationGrade) {
-                $destinationClass = $validated['destination_class'];
                 $destinationCount = Customer::query()
                     ->where('grade', $destinationGrade)
                     ->where('kelas', $destinationClass)
@@ -762,7 +755,7 @@ class AdminController extends Controller
 
                 if ($destinationCount + $customers->count() > Customer::MAX_CLASS_SIZE) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        'destination_class' => 'Rombel tujuan hanya dapat menampung maksimal '.Customer::MAX_CLASS_SIZE.' nasabah.',
+                        'source_class' => 'Rombel tujuan Kelas '.$destinationGrade.' '.$destinationClass.' hanya memiliki sisa '.max(0, Customer::MAX_CLASS_SIZE - $destinationCount).' kursi. Kurangi siswa yang dipilih atau kosongkan kursi tujuan terlebih dahulu.',
                     ]);
                 }
 
@@ -784,7 +777,7 @@ class AdminController extends Controller
         });
 
         $message = $destinationGrade
-            ? $processedCount.' nasabah berhasil dinaikkan ke kelas '.$destinationGrade.' '.$validated['destination_class'].'.'
+            ? $processedCount.' nasabah berhasil dinaikkan ke kelas '.$destinationGrade.' '.$destinationClass.'.'
             : $processedCount.' nasabah berhasil ditandai sebagai lulusan.';
 
         return redirect()->route('admin.class_promotion', [
@@ -792,6 +785,24 @@ class AdminController extends Controller
             'source_class' => $validated['source_class'],
         ])
             ->with('success', $message);
+    }
+
+    private function destinationClassFor(?string $sourceClass, ?int $destinationGrade): ?string
+    {
+        if (! $sourceClass || ! $destinationGrade) {
+            return null;
+        }
+
+        $destinationClasses = Customer::availableKelas((string) $destinationGrade);
+        if (in_array($sourceClass, $destinationClasses, true)) {
+            return $sourceClass;
+        }
+
+        if ($sourceClass === 'LPS 2' && in_array('LPS 1', $destinationClasses, true)) {
+            return 'LPS 1';
+        }
+
+        return null;
     }
 
     // Example helper to generate an account number based on academic year and student id
