@@ -28,7 +28,7 @@
         <a class="nav-link {{ request()->routeIs('admin.nasabah_kelas') ? 'active' : '' }}"
            href="{{ route('admin.nasabah_kelas') }}"
            @if(request()->routeIs('admin.nasabah_kelas')) aria-current="page" @endif>
-            Nasabah per Kelas
+            Data Nasabah
         </a>
         <a class="nav-link {{ request()->routeIs('admin.class_promotion*') ? 'active' : '' }}"
            href="{{ route('admin.class_promotion') }}"

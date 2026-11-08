@@ -97,9 +97,9 @@
             </div>
             <div class="col">
                 <article class="card admin-menu-card">
-                    <h3 class="admin-menu-card__heading"><i class="bi bi-person-lines-fill admin-menu-card__icon"></i><span>Daftar Nasabah per Kelas</span></h3>
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-person-lines-fill admin-menu-card__icon"></i><span>Data Nasabah</span></h3>
                     <p class="admin-menu-card__description">Lihat nama nasabah aktif yang dikelompokkan berdasarkan tingkat dan kelas.</p>
-                    <a href="{{ route('admin.nasabah_kelas') }}" class="stretched-link" aria-label="Buka daftar nasabah aktif per kelas"></a>
+                    <a href="{{ route('admin.nasabah_kelas') }}" class="stretched-link" aria-label="Buka Data Nasabah"></a>
                 </article>
             </div>
             <div class="col">

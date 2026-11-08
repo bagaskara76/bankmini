@@ -81,7 +81,7 @@
 <div class="row mt-4">
     <div class="col-12 mb-3 d-flex align-items-center gap-3">
         <div>
-            <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah per Kelas</h3>
+            <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah</h3>
             <p class="text-muted mb-0 small">Daftar nasabah aktif dan alumni dikelompokkan berdasarkan tingkat dan kelas</p>
         </div>
         <a href="{{ route('admin.class_promotion') }}" class="btn btn-primary ms-auto text-nowrap">

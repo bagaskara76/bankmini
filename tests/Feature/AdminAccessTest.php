@@ -31,7 +31,7 @@ class AdminAccessTest extends TestCase
 
         $this->get('/admin/dashboard')
             ->assertOk()
-            ->assertSee('Daftar Nasabah per Kelas')
+            ->assertSee('Data Nasabah')
             ->assertSee('Kenaikan Kelas')
             ->assertSee(route('admin.class_promotion'), false)
             ->assertSee('Selisih Kas')
