@@ -18,6 +18,7 @@
     <div>Teller: {{ optional($report->teller)->name }}</div>
     <table>
         <tr><th>Modal Awal</th><td class="amount">Rp {{ number_format($report->initial_capital, 0, ',', '.') }}</td></tr>
+        <tr><th>Modal Tambahan</th><td class="amount">Rp {{ number_format($report->additional_capital, 0, ',', '.') }}</td></tr>
         <tr><th>Total Setoran</th><td class="amount">Rp {{ number_format($report->total_deposit, 0, ',', '.') }}</td></tr>
         <tr><th>Total Penarikan</th><td class="amount">Rp {{ number_format($report->total_withdrawal, 0, ',', '.') }}</td></tr>
         <tr><th>Kas Sistem</th><td class="amount">Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td></tr>

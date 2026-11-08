@@ -57,6 +57,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:teller'])->group(function () {
     Route::get('/teller/dashboard', [\App\Http\Controllers\TellerController::class, 'dashboard'])->name('teller.dashboard');
     Route::post('/teller/initial-capital', [\App\Http\Controllers\TellerController::class, 'addInitialCapital'])->name('teller.initial_capital');
+    Route::post('/teller/additional-capital', [\App\Http\Controllers\TellerController::class, 'addAdditionalCapital'])->name('teller.additional_capital');
     Route::post('/teller/daily-report/submit', [\App\Http\Controllers\TellerController::class, 'submitDailyReport'])->name('teller.daily_report.submit');
     Route::get('/teller/transaction/{customer}', [\App\Http\Controllers\TellerController::class, 'showTransaction'])->name('teller.transaction');
     Route::get('/teller/customer/{customer}/pin-recovery', [AuthController::class, 'showPinRecoveryForm'])->name('teller.pin_recovery');

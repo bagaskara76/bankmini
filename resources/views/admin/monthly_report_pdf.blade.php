@@ -43,7 +43,7 @@
     <h2>Rincian Laporan Kas Disetujui</h2>
     <table class="details">
         <thead>
-            <tr><th>Tanggal</th><th>Teller</th><th class="number">Modal awal</th><th class="number">Setoran</th><th class="number">Penarikan</th><th class="number">Kas sistem</th><th class="number">Kas fisik</th><th>Diperiksa oleh</th></tr>
+            <tr><th>Tanggal</th><th>Teller</th><th class="number">Modal awal</th><th class="number">Modal tambahan</th><th class="number">Setoran</th><th class="number">Penarikan</th><th class="number">Kas sistem</th><th class="number">Kas fisik</th><th>Diperiksa oleh</th></tr>
         </thead>
         <tbody>
             @forelse($dailyReports as $report)
@@ -51,6 +51,7 @@
                     <td>{{ $report->report_date->format('d/m/Y') }}</td>
                     <td>{{ optional($report->teller)->name ?? 'Teller tidak ditemukan' }}</td>
                     <td class="number">Rp {{ number_format($report->initial_capital, 0, ',', '.') }}</td>
+                    <td class="number">Rp {{ number_format($report->additional_capital, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($report->total_deposit, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($report->total_withdrawal, 0, ',', '.') }}</td>
                     <td class="number">Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td>
@@ -58,7 +59,7 @@
                     <td>{{ optional($report->reviewedBy)->name ?? '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="muted">Belum ada laporan kas yang disetujui pada bulan ini.</td></tr>
+                <tr><td colspan="9" class="muted">Belum ada laporan kas yang disetujui pada bulan ini.</td></tr>
             @endforelse
         </tbody>
     </table>

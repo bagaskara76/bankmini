@@ -94,6 +94,49 @@ class TellerDailyReportTest extends TestCase
             ->assertDontSee('Teller Kas');
     }
 
+    public function test_teller_can_add_capital_to_the_daily_cash_after_saving_initial_capital(): void
+    {
+        $teller = User::factory()->create(['role' => 'teller']);
+
+        $this->actingAs($teller)
+            ->post(route('teller.initial_capital'), ['initial_capital' => 100000])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->get(route('teller.dashboard'))
+            ->assertOk()
+            ->assertSee('Tambah Modal Awal');
+
+        $this->post(route('teller.additional_capital'), ['amount' => 50000])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $report = DailyReport::where('teller_id', $teller->id)->firstOrFail();
+        $this->assertSame(100000, (int) $report->initial_capital);
+        $this->assertSame(50000, (int) $report->additional_capital);
+        $this->assertSame(150000, (int) $report->system_cash);
+
+        $this->post(route('teller.daily_report.submit'), ['physical_cash' => 150000])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)
+            ->get(route('admin.verify_reports'))
+            ->assertOk()
+            ->assertSee('Modal Tambahan')
+            ->assertSee('Rp 50.000');
+
+        $this->actingAs($teller);
+        $this->post(route('teller.additional_capital'), ['amount' => 25000])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $report->refresh();
+        $this->assertSame(50000, (int) $report->additional_capital);
+        $this->assertSame(150000, (int) $report->system_cash);
+    }
+
     public function test_withdrawal_is_blocked_until_teller_records_initial_capital(): void
     {
         $teller = User::factory()->create(['role' => 'teller']);

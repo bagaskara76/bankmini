@@ -14,6 +14,7 @@ class DailyReport extends Model
         'reviewed_by',
         'report_date',
         'initial_capital',
+        'additional_capital',
         'total_deposit',
         'total_withdrawal',
         'system_cash',

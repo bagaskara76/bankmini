@@ -22,7 +22,7 @@
                         <thead>
                             <tr>
                                 <th>Teller</th><th>Tanggal</th><th>Total Setoran</th><th>Total Penarikan</th>
-                                <th>Modal Awal</th><th>Laporan Web (Kas Sistem)</th><th>Kas Fisik Teller</th><th>Selisih</th><th></th>
+                                <th>Modal Awal</th><th>Modal Tambahan</th><th>Laporan Web (Kas Sistem)</th><th>Kas Fisik Teller</th><th>Selisih</th><th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -33,6 +33,7 @@
                                 <td>Rp {{ number_format($report->total_deposit, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($report->total_withdrawal, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($report->initial_capital, 0, ',', '.') }}</td>
+                                <td>Rp {{ number_format($report->additional_capital, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td>
                                 <td class="{{ (int) $report->physical_cash === (int) $report->system_cash ? 'text-success' : 'text-danger' }}">Rp {{ number_format($report->physical_cash, 0, ',', '.') }}</td>
                                 <td class="{{ (int) $report->physical_cash === (int) $report->system_cash ? 'text-success' : 'text-danger' }}">Rp {{ number_format($report->physical_cash - $report->system_cash, 0, ',', '.') }}</td>

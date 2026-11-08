@@ -26,6 +26,18 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 @enderror
+@error('amount')
+<div class="alert alert-danger alert-dismissible fade show">
+    {{ $message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@enderror
+@error('initial_capital')
+<div class="alert alert-danger alert-dismissible fade show">
+    {{ $message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@enderror
 
 <div class="row mb-4">
     <div class="col-md-4">
@@ -33,10 +45,20 @@
             <h5 class="fw-bold">Modal Awal Hari Ini</h5>
             <p class="fs-4 mb-3">Rp {{ number_format($dailyReport->initial_capital, 0, ',', '.') }}</p>
             @if($dailyReport->status === 'draft')
-            <form method="POST" action="{{ route('teller.initial_capital') }}">
-                @csrf
-                <div class="input-group"><span class="input-group-text">Rp</span><input type="number" name="initial_capital" min="0" class="form-control" value="{{ $dailyReport->initial_capital }}" required><button class="btn btn-primary">Simpan</button></div>
-            </form>
+                @if($dailyReport->initial_capital <= 0)
+                <form method="POST" action="{{ route('teller.initial_capital') }}">
+                    @csrf
+                    <label for="initial_capital" class="form-label">Catat modal awal</label>
+                    <div class="input-group"><span class="input-group-text">Rp</span><input id="initial_capital" type="number" name="initial_capital" min="0" step="1" class="form-control" value="{{ old('initial_capital', $dailyReport->initial_capital) }}" required><button class="btn btn-primary">Simpan</button></div>
+                </form>
+                @else
+                <div class="small text-muted mb-2">Modal tambahan hari ini: Rp {{ number_format($dailyReport->additional_capital, 0, ',', '.') }}</div>
+                <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#additionalCapitalModal">
+                    <i class="bi bi-plus-circle me-1"></i>Tambah Modal Awal
+                </button>
+                @endif
+            @else
+                <div class="small text-muted">Modal tambahan hari ini: Rp {{ number_format($dailyReport->additional_capital, 0, ',', '.') }}</div>
             @endif
         </div></div>
     </div>
@@ -77,6 +99,34 @@
         </div></div>
     </div>
 </div>
+
+@if($dailyReport->status === 'draft' && $dailyReport->initial_capital > 0)
+<div class="modal fade" id="additionalCapitalModal" tabindex="-1" aria-labelledby="additionalCapitalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('teller.additional_capital') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="additionalCapitalModalLabel">Tambah Modal Awal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Modal tambahan akan langsung menambah kas harian dan dicantumkan terpisah dari modal awal.</p>
+                    <label for="additional_capital_amount" class="form-label">Nominal tambahan</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input id="additional_capital_amount" type="number" name="amount" min="1" step="1" class="form-control" value="{{ old('amount') }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Modal Tambahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="row">
     <!-- QR Scanner Card -->

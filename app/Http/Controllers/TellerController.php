@@ -53,17 +53,67 @@ class TellerController extends Controller
 
     public function addInitialCapital(Request $request)
     {
-        $request->validate(['initial_capital' => 'required|numeric|min:0']);
+        $validated = $request->validate(['initial_capital' => 'required|integer|min:0']);
         $report = $this->todayReport();
 
         if ($report->status !== 'draft') {
             return back()->with('error', 'Laporan yang sudah diajukan tidak dapat diubah.');
         }
 
-        $report->initial_capital = $request->initial_capital;
+        if ($report->initial_capital > 0) {
+            return back()->with('error', 'Modal awal hari ini sudah tersimpan. Gunakan menu Tambah Modal Awal untuk menambah kas.');
+        }
+
+        $report->initial_capital = $validated['initial_capital'];
         $this->refreshSystemCash($report);
 
         return back()->with('success', 'Modal awal berhasil dicatat.');
+    }
+
+    public function addAdditionalCapital(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|integer|min:1',
+        ], [
+            'amount.required' => 'Nominal modal tambahan wajib diisi.',
+            'amount.integer' => 'Nominal modal tambahan harus berupa bilangan bulat.',
+            'amount.min' => 'Nominal modal tambahan harus lebih dari 0.',
+        ]);
+
+        $report = $this->todayReport();
+
+        if ($report->status !== 'draft') {
+            return back()->with('error', 'Modal tambahan tidak dapat dicatat karena laporan harian sudah diajukan.');
+        }
+
+        if ($report->initial_capital <= 0) {
+            return back()->with('error', 'Catat modal awal hari ini sebelum menambahkan modal.');
+        }
+
+        $added = DB::transaction(function () use ($validated) {
+            $report = DailyReport::query()
+                ->where('teller_id', Auth::id())
+                ->whereDate('report_date', now()->toDateString())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($report->status !== 'draft' || $report->initial_capital <= 0) {
+                return false;
+            }
+
+            $report->additional_capital += $validated['amount'];
+            $report->system_cash = $report->initial_capital + $report->additional_capital
+                + $report->total_deposit - $report->total_withdrawal;
+            $report->save();
+
+            return true;
+        });
+
+        if (!$added) {
+            return back()->with('error', 'Laporan harian tidak lagi dapat menerima modal tambahan.');
+        }
+
+        return back()->with('success', 'Modal tambahan berhasil dicatat ke kas harian.');
     }
 
     public function submitDailyReport(Request $request)
@@ -82,7 +132,8 @@ class TellerController extends Controller
             'physical_cash.min' => 'Kas fisik tidak boleh kurang dari 0.',
         ]);
 
-        $report->system_cash = $report->initial_capital + $report->total_deposit - $report->total_withdrawal;
+        $report->system_cash = $report->initial_capital + $report->additional_capital
+            + $report->total_deposit - $report->total_withdrawal;
         $report->physical_cash = $validated['physical_cash'];
         $report->status = 'pending';
         $report->reviewed_by = null;
@@ -102,7 +153,8 @@ class TellerController extends Controller
 
     private function refreshSystemCash(DailyReport $report): void
     {
-        $report->system_cash = $report->initial_capital + $report->total_deposit - $report->total_withdrawal;
+        $report->system_cash = $report->initial_capital + $report->additional_capital
+            + $report->total_deposit - $report->total_withdrawal;
         $report->save();
     }
 
@@ -128,7 +180,7 @@ class TellerController extends Controller
         $account_number = $request->input('account_number');
 
         $customer = Customer::with('user');
-        
+
         if ($qr_code) {
             $customer = $customer->where('qr_code_string', $qr_code);
         } elseif ($account_number) {
@@ -206,7 +258,8 @@ class TellerController extends Controller
                 );
 
                 $report->total_deposit += $amount;
-                $report->system_cash = $report->initial_capital + $report->total_deposit - $report->total_withdrawal;
+                $report->system_cash = $report->initial_capital + $report->additional_capital
+                    + $report->total_deposit - $report->total_withdrawal;
                 $report->save();
 
                 return $trx;
@@ -310,14 +363,15 @@ class TellerController extends Controller
                 );
 
                 $report->total_withdrawal += $amount;
-                $report->system_cash = $report->initial_capital + $report->total_deposit - $report->total_withdrawal;
+                $report->system_cash = $report->initial_capital + $report->additional_capital
+                    + $report->total_deposit - $report->total_withdrawal;
                 $report->save();
 
                 return $trx;
             });
 
             return redirect()->route('teller.transaction', $customer->id)
-                ->with('success', 'Penarikan tunai berhasil. Sisa Saldo: Rp ' . number_format($customer->balance, 0, ',', '.'))
+                ->with('success', 'Penarikan tunai berhasil. Sisa Saldo: Rp '.number_format($customer->balance, 0, ',', '.'))
                 ->with('receiptTransactionId', $transaction->id);
         } catch (\Exception $e) {
             Log::error('Gagal memproses penarikan.', [
