@@ -95,39 +95,42 @@ class ClassPromotionTest extends TestCase
             ->assertSee('Nasabah Lulus / Alumni');
     }
 
-    public function test_promotion_is_rejected_when_matching_destination_class_is_full(): void
+    public function test_promotion_succeeds_when_destination_class_exceeds_previous_limit(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $student = User::factory()->create(['role' => 'customer']);
         $customer = $this->createCustomer($student, '1000000020', 'QR-FULL-TEST', 10, 'RPL 1');
 
-        foreach (range(1, Customer::MAX_CLASS_SIZE) as $index) {
+        foreach (range(1, 37) as $index) {
             $destinationStudent = User::factory()->create(['role' => 'customer']);
             $this->createCustomer(
                 $destinationStudent,
                 sprintf('200000%04d', $index),
                 'QR-FULL-'.$index,
                 11,
-                'RPL 2'
+                'RPL 1'
             );
         }
 
         $this->actingAs($admin)
-            ->from(route('admin.class_promotion', ['grade' => 10, 'source_class' => 'RPL 1']))
             ->post(route('admin.class_promotion.process'), [
                 'source_grade' => 10,
                 'source_class' => 'RPL 1',
                 'customer_ids' => [$customer->id],
             ])
             ->assertRedirect(route('admin.class_promotion', ['grade' => 10, 'source_class' => 'RPL 1']))
-            ->assertSessionHasErrors('source_class');
+            ->assertSessionHas('success');
 
         $this->assertDatabaseHas('customers', [
             'id' => $customer->id,
-            'grade' => 10,
+            'grade' => 11,
             'kelas' => 'RPL 1',
             'is_graduated' => false,
         ]);
+        $this->assertSame(
+            38,
+            Customer::query()->where('grade', 11)->where('kelas', 'RPL 1')->where('is_graduated', false)->count()
+        );
     }
 
     public function test_lps_two_students_remain_in_lps_two_when_promoted_to_grade_twelve(): void

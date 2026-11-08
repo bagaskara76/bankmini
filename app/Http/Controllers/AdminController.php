@@ -683,14 +683,6 @@ class AdminController extends Controller
 
         $destinationGrade = $grade < 12 ? $grade + 1 : null;
         $destinationClass = $this->destinationClassFor($sourceClass, $destinationGrade);
-        $destinationCount = $destinationGrade && $destinationClass
-            ? Customer::query()
-                ->where('grade', $destinationGrade)
-                ->where('kelas', $destinationClass)
-                ->where('is_graduated', false)
-                ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
-                ->count()
-            : 0;
 
         return view('admin.class_promotion', compact(
             'grade',
@@ -698,8 +690,7 @@ class AdminController extends Controller
             'sourceClasses',
             'customers',
             'destinationGrade',
-            'destinationClass',
-            'destinationCount'
+            'destinationClass'
         ));
     }
 
@@ -745,20 +736,6 @@ class AdminController extends Controller
             }
 
             if ($destinationGrade) {
-                $destinationCount = Customer::query()
-                    ->where('grade', $destinationGrade)
-                    ->where('kelas', $destinationClass)
-                    ->where('is_graduated', false)
-                    ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
-                    ->lockForUpdate()
-                    ->count();
-
-                if ($destinationCount + $customers->count() > Customer::MAX_CLASS_SIZE) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'source_class' => 'Rombel tujuan Kelas '.$destinationGrade.' '.$destinationClass.' hanya memiliki sisa '.max(0, Customer::MAX_CLASS_SIZE - $destinationCount).' kursi. Kurangi siswa yang dipilih atau kosongkan kursi tujuan terlebih dahulu.',
-                    ]);
-                }
-
                 foreach ($customers as $customer) {
                     $customer->grade = $destinationGrade;
                     $customer->kelas = $destinationClass;

@@ -12,8 +12,6 @@ class Customer extends Model
 
     public const MINIMUM_BALANCE = 10000;
 
-    public const MAX_CLASS_SIZE = 36;
-
     protected $fillable = [
         'user_id',
         'account_number',

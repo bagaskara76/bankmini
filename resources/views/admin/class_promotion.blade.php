@@ -44,7 +44,6 @@
                     <li>Siswa yang tidak dicentang tetap terdaftar di kelas asal.</li>
                     @if($destinationGrade)
                         <li>Rombel tujuan ditentukan otomatis mengikuti rombel asal.</li>
-                        <li>Kapasitas setiap rombel tujuan maksimal {{ \App\Models\Customer::MAX_CLASS_SIZE }} siswa.</li>
                     @else
                         <li>Siswa kelas 12 yang dicentang akan ditandai lulus dan tetap tercatat pada kelas terakhirnya.</li>
                     @endif
@@ -99,10 +98,6 @@
                             <div class="fw-semibold">
                                 @if($destinationClass)
                                     Kelas {{ $destinationGrade }} {{ $destinationClass }}
-                                    <span class="text-muted fw-normal">
-                                        ({{ $destinationCount }}/{{ \App\Models\Customer::MAX_CLASS_SIZE }} terisi,
-                                        sisa {{ max(0, \App\Models\Customer::MAX_CLASS_SIZE - $destinationCount) }})
-                                    </span>
                                 @else
                                     Belum tersedia
                                 @endif
