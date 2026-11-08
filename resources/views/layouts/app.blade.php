@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Teller Bank Mini Sekolah</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo-sekolah.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-smea-lama.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -149,7 +149,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
         <div class="container">
             <a class="navbar-brand d-inline-flex align-items-center gap-2" href="#">
-                <img class="navbar-brand__logo" src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMK Negeri 1 Bantul">
+                <img class="navbar-brand__logo" src="{{ asset('images/logo-smea-lama.png') }}" alt="Logo SMK Negeri 1 Bantul">
                 <span>E-Teller Bank Mini</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="target" aria-controls="navbarNav">

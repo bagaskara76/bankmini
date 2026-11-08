@@ -19,7 +19,7 @@
                         <p class="mb-0 opacity-75 small">BANK MINI SEKOLAH</p>
                         <p class="mb-0 opacity-75 small">Rekening Tabungan</p>
                     </div>
-                    <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMK Negeri 1 Bantul" style="width: 52px; height: 52px; object-fit: contain;">
+                    <img src="{{ asset('images/logo-smea-lama.png') }}" alt="Logo SMK Negeri 1 Bantul" style="width: 52px; height: 52px; object-fit: contain;">
                 </div>
                 <p class="mb-1 opacity-75 small">Saldo Tersedia</p>
                 <h2 class="fw-bold mb-3">Rp {{ number_format($customer->balance, 0, ',', '.') }}</h2>
