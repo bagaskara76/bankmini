@@ -615,8 +615,13 @@ class AdminController extends Controller
      */
     public function nasabahKelas(Request $request)
     {
-        $gradeFilter = $request->get('grade');   // 10 | 11 | 12 | null
-        $kelasFilter = $request->get('kelas');   // RPL 1 | ... | null
+        $validated = $request->validate([
+            'grade' => ['nullable', 'in:10,11,12,lulus'],
+            'kelas' => ['nullable', 'string', 'in:'.implode(',', Customer::availableKelas())],
+        ]);
+        $gradeFilter = $validated['grade'] ?? null;
+        $kelasFilter = $validated['kelas'] ?? null;
+        $showAlumniOnly = $gradeFilter === 'lulus';
 
         $query = Customer::with('user')
             ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
@@ -624,13 +629,17 @@ class AdminController extends Controller
             ->orderBy('grade')
             ->orderBy('kelas');
 
+        if ($showAlumniOnly) {
+            $query->whereRaw('1 = 0');
+        }
+
         $alumniQuery = Customer::with('user')
             ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
             ->where('is_graduated', true)
             ->orderBy('grade')
             ->orderBy('kelas');
 
-        if ($gradeFilter) {
+        if ($gradeFilter && ! $showAlumniOnly) {
             $query->where('grade', $gradeFilter);
             $alumniQuery->where('grade', $gradeFilter);
         }
@@ -657,7 +666,7 @@ class AdminController extends Controller
         return view('admin.nasabah_kelas', compact(
             'grouped', 'alumniGrouped', 'totalNasabah', 'totalAlumni',
             'gradeList', 'kelasList',
-            'gradeFilter', 'kelasFilter'
+            'gradeFilter', 'kelasFilter', 'showAlumniOnly'
         ));
     }
 

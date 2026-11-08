@@ -130,6 +130,7 @@
                         @foreach($gradeList as $g)
                             <option value="{{ $g }}" {{ $gradeFilter == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
                         @endforeach
+                        <option value="lulus" @selected($gradeFilter === 'lulus')>Siswa Lulus</option>
                     </select>
                 </div>
                 <div class="col-auto">
@@ -158,12 +159,13 @@
         </div>
     </div>
 
-    <div class="col-12 mb-2">
-        <h4 class="fw-bold mb-0">Nasabah Aktif</h4>
-    </div>
+    @unless($showAlumniOnly)
+        <div class="col-12 mb-2">
+            <h4 class="fw-bold mb-0">Nasabah Aktif</h4>
+        </div>
 
-    {{-- ── Konten Per Angkatan ── --}}
-    <div class="col-12" id="nasabahList">
+        {{-- ── Konten Per Angkatan ── --}}
+        <div class="col-12" id="nasabahList">
         @forelse($grouped->sortKeys() as $grade => $byKelas)
         <div class="mb-4 grade-{{ $grade }}">
             {{-- Header Angkatan --}}
@@ -275,7 +277,8 @@
             @endif
         </div>
         @endforelse
-    </div>
+        </div>
+    @endunless
 
     <div class="col-12 mt-3">
         <div class="d-flex align-items-center gap-2 mb-3">

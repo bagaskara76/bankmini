@@ -89,10 +89,11 @@ class ClassPromotionTest extends TestCase
             'customer_id' => $customer->id,
         ]);
 
-        $this->get(route('admin.nasabah_kelas'))
+        $this->get(route('admin.nasabah_kelas', ['grade' => 'lulus']))
             ->assertOk()
             ->assertSee('Siswa Lulus')
             ->assertSee('Lulus')
+            ->assertDontSee('Nasabah Aktif')
             ->assertDontSee('Kelas 12 RPL 1')
             ->assertDontSee('Angkatan Kelas 12');
     }
