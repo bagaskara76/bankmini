@@ -93,6 +93,7 @@ class ClassPromotionTest extends TestCase
             ->assertOk()
             ->assertSee('Siswa Lulus')
             ->assertSee('Lulus')
+            ->assertDontSee('Kelas 12 RPL 1')
             ->assertDontSee('Angkatan Kelas 12');
     }
 

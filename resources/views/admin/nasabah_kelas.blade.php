@@ -317,8 +317,8 @@
                                          aria-expanded="true"
                                          aria-controls="{{ $alumniTableId }}">
                                         <span class="kelas-label">
-                                            <i class="bi bi-door-closed-fill"></i>
-                                            Kelas {{ $alumniGrade }} {{ $alumniClass }}
+                                             <i class="bi bi-mortarboard-fill"></i>
+                                             Siswa Lulus
                                         </span>
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="badge rounded-pill" style="background:var(--grade-color,#6b7280)">
