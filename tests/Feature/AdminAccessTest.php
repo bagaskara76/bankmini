@@ -55,7 +55,7 @@ class AdminAccessTest extends TestCase
             ->assertOk()
             ->assertDontSee('Rangkuman Data Nasabah per Kelas')
             ->assertSee('Daftar nasabah aktif dan alumni dikelompokkan berdasarkan tingkat dan kelas')
-            ->assertSee('Nasabah Lulus / Alumni')
+            ->assertSee('Lulus')
             ->assertDontSee('Navigasi anggota dan nasabah')
             ->assertSee('LPS 1')
             ->assertSee('LPS 2');

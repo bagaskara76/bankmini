@@ -92,7 +92,8 @@ class ClassPromotionTest extends TestCase
         $this->get(route('admin.nasabah_kelas'))
             ->assertOk()
             ->assertSee('Siswa Lulus')
-            ->assertSee('Nasabah Lulus / Alumni');
+            ->assertSee('Lulus')
+            ->assertDontSee('Angkatan Kelas 12');
     }
 
     public function test_promotion_succeeds_when_destination_class_exceeds_previous_limit(): void

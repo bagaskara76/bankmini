@@ -6,6 +6,7 @@
     .grade-10 { --grade-color: #2a5298; --grade-light: #dce8ff; }
     .grade-11 { --grade-color: #6d28d9; --grade-light: #ede9fe; }
     .grade-12 { --grade-color: #b45309; --grade-light: #fef3c7; }
+    .alumni-grade { --grade-color: #0f766e; --grade-light: #ccfbf1; }
 
     .grade-header {
         background: var(--grade-color);
@@ -278,15 +279,15 @@
 
     <div class="col-12 mt-3">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <h4 class="fw-bold mb-0">Nasabah Lulus / Alumni</h4>
+            <h4 class="fw-bold mb-0">Lulus</h4>
             <span class="badge text-bg-secondary">{{ $totalAlumni }} nasabah</span>
         </div>
 
         @forelse($alumniGrouped->sortKeys() as $alumniGrade => $alumniByKelas)
-            <div class="mb-4 grade-{{ $alumniGrade }}">
+            <div class="mb-4 grade-{{ $alumniGrade }} alumni-grade">
                 <div class="grade-header">
                     <i class="bi bi-mortarboard-fill fs-5"></i>
-                    <span class="fw-bold fs-5">Angkatan Kelas {{ $alumniGrade }}</span>
+                    <span class="fw-bold fs-5">Kelas {{ $alumniGrade }}</span>
                     <span class="badge-count">
                         {{ $alumniByKelas->flatten(1)->count() }} nasabah &nbsp;|&nbsp;
                         {{ $alumniByKelas->count() }} kelas
