@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Kenali Bank Mini sekolah dan layanan E-Teller untuk mencatat serta mengelola transaksi tabungan siswa.">
     <title>E-Teller Bank Mini Sekolah</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo-sekolah.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-smea-lama.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -166,7 +166,7 @@
     <header class="site-header">
         <nav class="nav-wrap" aria-label="Navigasi utama">
             <a class="brand" href="{{ route('home') }}">
-                <img src="{{ asset('images/logo-sekolah.png') }}" alt="">
+                <img src="{{ asset('images/logo-smea-lama.png') }}" alt="">
                 <span>E-Teller Bank Mini<small>SMK Negeri 1 Bantul</small></span>
             </a>
             <div class="nav-links">
