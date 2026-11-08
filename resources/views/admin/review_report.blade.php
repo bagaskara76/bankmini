@@ -25,8 +25,7 @@
             <div class="table-responsive">
                 <table class="table table-bordered align-middle mb-0">
                     <tbody>
-                        <tr><th>Modal awal</th><td class="text-end">Rp {{ number_format($report->initial_capital, 0, ',', '.') }}</td></tr>
-                        <tr><th>Modal tambahan</th><td class="text-end">Rp {{ number_format($report->additional_capital, 0, ',', '.') }}</td></tr>
+                        <tr><th>Modal awal</th><td class="text-end">Rp {{ number_format($report->total_capital, 0, ',', '.') }}</td></tr>
                         <tr><th>Total setoran</th><td class="text-end">Rp {{ number_format($report->total_deposit, 0, ',', '.') }}</td></tr>
                         <tr><th>Total penarikan</th><td class="text-end">Rp {{ number_format($report->total_withdrawal, 0, ',', '.') }}</td></tr>
                         <tr><th>Laporan web (kas sistem)</th><td class="text-end fw-bold">Rp {{ number_format($report->system_cash, 0, ',', '.') }}</td></tr>

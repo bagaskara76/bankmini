@@ -27,6 +27,11 @@ class DailyReport extends Model
         'report_date' => 'date',
     ];
 
+    public function getTotalCapitalAttribute(): int
+    {
+        return (int) $this->initial_capital + (int) $this->additional_capital;
+    }
+
     public function teller()
     {
         return $this->belongsTo(User::class, 'teller_id');

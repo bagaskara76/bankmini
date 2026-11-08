@@ -43,7 +43,7 @@
     <div class="col-md-4">
         <div class="card"><div class="card-body">
             <h5 class="fw-bold">Modal Awal Hari Ini</h5>
-            <p class="fs-4 mb-3">Rp {{ number_format($dailyReport->initial_capital, 0, ',', '.') }}</p>
+            <p class="fs-4 mb-3">Rp {{ number_format($dailyReport->total_capital, 0, ',', '.') }}</p>
             @if($dailyReport->status === 'draft')
                 @if($dailyReport->initial_capital <= 0)
                 <form method="POST" action="{{ route('teller.initial_capital') }}">
@@ -52,13 +52,10 @@
                     <div class="input-group"><span class="input-group-text">Rp</span><input id="initial_capital" type="number" name="initial_capital" min="0" step="1" class="form-control" value="{{ old('initial_capital', $dailyReport->initial_capital) }}" required><button class="btn btn-primary">Simpan</button></div>
                 </form>
                 @else
-                <div class="small text-muted mb-2">Modal tambahan hari ini: Rp {{ number_format($dailyReport->additional_capital, 0, ',', '.') }}</div>
                 <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#additionalCapitalModal">
                     <i class="bi bi-plus-circle me-1"></i>Tambah Modal Awal
                 </button>
                 @endif
-            @else
-                <div class="small text-muted">Modal tambahan hari ini: Rp {{ number_format($dailyReport->additional_capital, 0, ',', '.') }}</div>
             @endif
         </div></div>
     </div>
@@ -111,7 +108,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted">Modal tambahan akan langsung menambah kas harian dan dicantumkan terpisah dari modal awal.</p>
+                    <p class="text-muted">Modal tambahan akan langsung dijumlahkan ke modal awal dan kas harian.</p>
                     <label for="additional_capital_amount" class="form-label">Nominal tambahan</label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>

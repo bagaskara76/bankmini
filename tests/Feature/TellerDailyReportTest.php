@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\DailyReport;
 use App\Models\Customer;
+use App\Models\DailyReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
@@ -124,8 +124,9 @@ class TellerDailyReportTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.verify_reports'))
             ->assertOk()
-            ->assertSee('Modal Tambahan')
-            ->assertSee('Rp 50.000');
+            ->assertSee('Modal Awal')
+            ->assertSee('Rp 150.000')
+            ->assertDontSee('Modal Tambahan');
 
         $this->actingAs($teller);
         $this->post(route('teller.additional_capital'), ['amount' => 25000])
