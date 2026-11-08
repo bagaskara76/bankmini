@@ -287,7 +287,7 @@
             <div class="mb-4 grade-{{ $alumniGrade }} alumni-grade">
                 <div class="grade-header">
                     <i class="bi bi-mortarboard-fill fs-5"></i>
-                    <span class="fw-bold fs-5">Kelas {{ $alumniGrade }}</span>
+                    <span class="fw-bold fs-5">{{ (int) $alumniGrade === 12 ? 'Lulus' : 'Kelas '.$alumniGrade }}</span>
                     <span class="badge-count">
                         {{ $alumniByKelas->flatten(1)->count() }} nasabah &nbsp;|&nbsp;
                         {{ $alumniByKelas->count() }} kelas
