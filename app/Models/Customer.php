@@ -45,10 +45,6 @@ class Customer extends Model
             'BD',
         ];
 
-        if ($grade === '12') {
-            return array_values(array_diff($kelas, ['LPS 2']));
-        }
-
         return $kelas;
     }
 

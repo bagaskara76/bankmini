@@ -45,9 +45,6 @@
                     @if($destinationGrade)
                         <li>Rombel tujuan ditentukan otomatis mengikuti rombel asal.</li>
                         <li>Kapasitas setiap rombel tujuan maksimal {{ \App\Models\Customer::MAX_CLASS_SIZE }} siswa.</li>
-                        @if($sourceClass === 'LPS 2' && $destinationClass === 'LPS 1')
-                            <li>Siswa kelas LPS 2 akan diarahkan ke LPS 1 karena tidak tersedia rombel LPS 2 di tingkat {{ $destinationGrade }}.</li>
-                        @endif
                     @else
                         <li>Siswa kelas 12 yang dicentang akan ditandai lulus dan tetap tercatat pada kelas terakhirnya.</li>
                     @endif

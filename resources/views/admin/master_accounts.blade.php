@@ -100,7 +100,7 @@
                         <option value="">— Pilih Kelas —</option>
                         @foreach($kelasList as $k)
                             <option value="{{ $k }}"
-                                    data-grades="{{ $k === 'LPS 2' ? '10,11' : '10,11,12' }}"
+                                    data-grades="10,11,12"
                                     {{ old('kelas') == $k ? 'selected' : '' }}>
                                 {{ $k }}
                             </option>

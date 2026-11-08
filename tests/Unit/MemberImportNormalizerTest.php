@@ -29,7 +29,9 @@ class MemberImportNormalizerTest extends TestCase
         $this->assertSame('LPS 1', $normalizer->normalizeClass('XII LPS', '12'));
         $this->assertSame('LPS 1', $normalizer->normalizeClass('LPS 1', '10'));
         $this->assertSame('LPS 2', $normalizer->normalizeClass('LPS 2', '11'));
-        $this->assertSame('LPS', $normalizer->normalizeClass('LPS', '10'));
+        $this->assertSame('LPS 2', $normalizer->normalizeClass('LPS 2', '12'));
+        $this->assertSame('LPS 1', $normalizer->normalizeClass('LPS', '10'));
+        $this->assertSame('LPS 1', $normalizer->normalizeClass('LPS', '12'));
         $this->assertSame('IPA 1', $normalizer->normalizeClass('XI IPA 1'));
         $this->assertNotContains('IPA 1', \App\Models\Customer::availableKelas());
         $this->assertNotContains('IPS 2', \App\Models\Customer::availableKelas());
@@ -49,6 +51,9 @@ class MemberImportNormalizerTest extends TestCase
         ], \App\Models\Customer::availableKelas());
         $this->assertContains('LPS 2', \App\Models\Customer::availableKelas('10'));
         $this->assertContains('LPS 2', \App\Models\Customer::availableKelas('11'));
-        $this->assertNotContains('LPS 2', \App\Models\Customer::availableKelas('12'));
+        foreach (['10', '11', '12'] as $grade) {
+            $this->assertContains('LPS 1', \App\Models\Customer::availableKelas($grade));
+            $this->assertContains('LPS 2', \App\Models\Customer::availableKelas($grade));
+        }
     }
 }

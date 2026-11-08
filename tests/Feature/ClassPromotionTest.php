@@ -130,7 +130,7 @@ class ClassPromotionTest extends TestCase
         ]);
     }
 
-    public function test_lps_two_students_are_automatically_placed_in_lps_one_when_promoted_to_grade_twelve(): void
+    public function test_lps_two_students_remain_in_lps_two_when_promoted_to_grade_twelve(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $student = User::factory()->create(['role' => 'customer']);
@@ -148,7 +148,7 @@ class ClassPromotionTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'id' => $customer->id,
             'grade' => 12,
-            'kelas' => 'LPS 1',
+            'kelas' => 'LPS 2',
             'is_graduated' => false,
         ]);
     }

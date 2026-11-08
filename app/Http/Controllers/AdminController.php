@@ -305,7 +305,7 @@ class AdminController extends Controller
                 'kelas' => ['required', 'in:'.implode(',', Customer::availableKelas($data['grade']))],
             ], [
                 'grade.in' => 'Tingkat harus 10, 11, 12 atau X, XI, XII.',
-                'kelas.in' => 'Nilai kelas "'.$data['kelas'].'" tidak sesuai dengan tingkat '.$data['grade'].'. Untuk tingkat 10/11, pilih LPS 1 atau LPS 2; untuk tingkat 12, pilih LPS 1.',
+                'kelas.in' => 'Nilai kelas "'.$data['kelas'].'" tidak sesuai dengan tingkat '.$data['grade'].'. Pilih rombel yang tersedia untuk tingkat tersebut.',
             ]);
 
             $rowErrors = $validator->errors()->all();
@@ -793,16 +793,9 @@ class AdminController extends Controller
             return null;
         }
 
-        $destinationClasses = Customer::availableKelas((string) $destinationGrade);
-        if (in_array($sourceClass, $destinationClasses, true)) {
-            return $sourceClass;
-        }
-
-        if ($sourceClass === 'LPS 2' && in_array('LPS 1', $destinationClasses, true)) {
-            return 'LPS 1';
-        }
-
-        return null;
+        return in_array($sourceClass, Customer::availableKelas((string) $destinationGrade), true)
+            ? $sourceClass
+            : null;
     }
 
     // Example helper to generate an account number based on academic year and student id

@@ -26,7 +26,7 @@ class MemberImportNormalizer
         $class = preg_replace('/^AKL(?=\s*[-_]?\s*\d)/i', 'AK', $class) ?? $class;
         $normalized = strtolower(preg_replace('/[^a-z0-9]/i', '', $class) ?? $class);
 
-        if ($normalized === 'lps' && $grade === '12') {
+        if ($normalized === 'lps') {
             return 'LPS 1';
         }
 
