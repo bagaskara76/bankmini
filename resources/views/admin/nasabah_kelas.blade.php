@@ -281,45 +281,102 @@
             <h4 class="fw-bold mb-0">Nasabah Lulus / Alumni</h4>
             <span class="badge text-bg-secondary">{{ $totalAlumni }} nasabah</span>
         </div>
-        <div class="card overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Kelas Terakhir</th>
-                            <th>Nama Nasabah</th>
-                            <th>No. Rekening</th>
-                            <th>Saldo</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($alumniGrouped->sortKeys() as $alumniGrade => $alumniByKelas)
-                            @foreach($alumniByKelas->sortKeys() as $alumniClass => $alumniCustomers)
-                                @foreach($alumniCustomers->sortBy(fn ($student) => optional($student->user)->name) as $alumni)
-                                    <tr class="alumni-row">
-                                        <td class="ps-3">Kelas {{ $alumniGrade }} {{ $alumniClass }}</td>
-                                        <td>
-                                            <span class="nasabah-name fw-medium">{{ optional($alumni->user)->name ?? '-' }}</span>
-                                            @if(optional($alumni->user)->is_blocked)
-                                                <span class="badge bg-danger ms-1" style="font-size:.65rem">Blokir</span>
-                                            @endif
-                                        </td>
-                                        <td><code class="small">{{ $alumni->account_number }}</code></td>
-                                        <td class="small text-nowrap">Rp {{ number_format($alumni->balance, 0, ',', '.') }}</td>
-                                        <td><span class="badge text-bg-secondary">Lulus</span></td>
-                                    </tr>
-                                @endforeach
-                            @endforeach
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">Belum ada nasabah yang ditandai lulus.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+
+        @forelse($alumniGrouped->sortKeys() as $alumniGrade => $alumniByKelas)
+            <div class="mb-4 grade-{{ $alumniGrade }}">
+                <div class="grade-header">
+                    <i class="bi bi-mortarboard-fill fs-5"></i>
+                    <span class="fw-bold fs-5">Angkatan Kelas {{ $alumniGrade }}</span>
+                    <span class="badge-count">
+                        {{ $alumniByKelas->flatten(1)->count() }} nasabah &nbsp;|&nbsp;
+                        {{ $alumniByKelas->count() }} kelas
+                    </span>
+                    <button class="btn btn-sm btn-link text-white ms-auto text-decoration-none"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#alumni-grade-body-{{ $alumniGrade }}"
+                            aria-expanded="true"
+                            aria-controls="alumni-grade-body-{{ $alumniGrade }}">
+                        <i class="bi bi-chevron-up"></i>
+                    </button>
+                </div>
+
+                <div id="alumni-grade-body-{{ $alumniGrade }}" class="collapse show"
+                     style="border:1.5px solid var(--grade-color); border-top:0; border-radius:0 0 12px 12px; padding:1rem; background:#fff;">
+                    <div class="row g-3">
+                        @foreach($alumniByKelas->sortKeys() as $alumniClass => $alumniCustomers)
+                            @php
+                                $alumniTableId = 'alumni-kelas-'.$alumniGrade.'-'.Str::slug($alumniClass);
+                                $sortedAlumni = $alumniCustomers->sortBy(fn ($student) => optional($student->user)->name);
+                            @endphp
+                            <div class="col-md-6 col-xl-4">
+                                <div class="kelas-card">
+                                    <div class="kelas-card-header"
+                                         data-bs-toggle="collapse"
+                                         data-bs-target="#{{ $alumniTableId }}"
+                                         aria-expanded="true"
+                                         aria-controls="{{ $alumniTableId }}">
+                                        <span class="kelas-label">
+                                            <i class="bi bi-door-closed-fill"></i>
+                                            Kelas {{ $alumniGrade }} {{ $alumniClass }}
+                                        </span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge rounded-pill" style="background:var(--grade-color,#6b7280)">
+                                                {{ $alumniCustomers->count() }} orang
+                                            </span>
+                                            <i class="bi bi-chevron-down toggle-icon"></i>
+                                        </div>
+                                    </div>
+
+                                    <div id="{{ $alumniTableId }}" class="collapse show">
+                                        <table class="table table-sm mb-0 kelas-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:32px">#</th>
+                                                    <th>Nama Nasabah</th>
+                                                    <th>No. Rekening</th>
+                                                    <th>Saldo</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($sortedAlumni as $index => $alumni)
+                                                    <tr class="alumni-row">
+                                                        <td class="text-muted small">{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <span class="nasabah-name fw-medium">{{ optional($alumni->user)->name ?? '-' }}</span>
+                                                            @if(optional($alumni->user)->is_blocked)
+                                                                <span class="badge bg-danger ms-1" style="font-size:.65rem">Blokir</span>
+                                                            @endif
+                                                        </td>
+                                                        <td><code class="small">{{ $alumni->account_number }}</code></td>
+                                                        <td class="small text-nowrap">Rp {{ number_format($alumni->balance, 0, ',', '.') }}</td>
+                                                        <td><span class="badge text-bg-secondary">Lulus</span></td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr style="background:#f8fafc;">
+                                                    <td colspan="3" class="small text-muted">Total saldo kelas</td>
+                                                    <td class="small fw-semibold" style="color:var(--grade-color)">
+                                                        Rp {{ number_format($alumniCustomers->sum('balance'), 0, ',', '.') }}
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
-        </div>
+        @empty
+            <div class="text-center empty-state">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p class="fs-5">Belum ada nasabah yang ditandai lulus.</p>
+            </div>
+        @endforelse
     </div>
 </div>
 @endsection
