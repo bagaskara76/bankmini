@@ -78,7 +78,7 @@
 @endpush
 
 @section('content')
-<div class="row row-cols-1 row-cols-md-3 row-cols-xl-5 mt-4">
+<div class="row mt-4">
     <div class="col-12 mb-3 d-flex align-items-center gap-3">
         <div>
             <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah per Kelas</h3>
@@ -90,29 +90,33 @@
     </div>
 
     {{-- ── Statistik Ringkas ── --}}
-    <div class="col mb-3">
-        <div class="stat-card" style="background: linear-gradient(135deg,#2a5298,#1e3c72);">
-            <div class="small opacity-75 mb-1"><i class="bi bi-people me-1"></i> Total Nasabah Aktif</div>
-            <div class="fs-2 fw-bold">{{ $totalNasabah }}</div>
-        </div>
-    </div>
-    <div class="col mb-3">
-        <div class="stat-card" style="background: linear-gradient(135deg,#475569,#1e293b);">
-            <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Total Alumni</div>
-            <div class="fs-2 fw-bold">{{ $totalAlumni }}</div>
-        </div>
-    </div>
-    @foreach([10 => ['#2a5298','#1e3c72'], 11 => ['#6d28d9','#4c1d95'], 12 => ['#b45309','#78350f']] as $g => $colors)
-    <div class="col mb-3">
-        <div class="stat-card" style="background: linear-gradient(135deg,{{ $colors[0] }},{{ $colors[1] }});">
-            <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Kelas {{ $g }}</div>
-            <div class="fs-2 fw-bold">
-                {{ isset($grouped[$g]) ? $grouped[$g]->flatten(1)->count() : 0 }}
-                <span class="fs-6 fw-normal opacity-75">nasabah</span>
+    <div class="col-12">
+        <div class="row row-cols-1 row-cols-md-3 row-cols-xl-5 g-3 mb-3">
+            <div class="col mb-3">
+                <div class="stat-card" style="background: linear-gradient(135deg,#2a5298,#1e3c72);">
+                    <div class="small opacity-75 mb-1"><i class="bi bi-people me-1"></i> Total Nasabah Aktif</div>
+                    <div class="fs-2 fw-bold">{{ $totalNasabah }}</div>
+                </div>
             </div>
+            <div class="col mb-3">
+                <div class="stat-card" style="background: linear-gradient(135deg,#475569,#1e293b);">
+                    <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Total Alumni</div>
+                    <div class="fs-2 fw-bold">{{ $totalAlumni }}</div>
+                </div>
+            </div>
+            @foreach([10 => ['#2a5298','#1e3c72'], 11 => ['#6d28d9','#4c1d95'], 12 => ['#b45309','#78350f']] as $g => $colors)
+                <div class="col mb-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg,{{ $colors[0] }},{{ $colors[1] }});">
+                        <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Kelas {{ $g }}</div>
+                        <div class="fs-2 fw-bold">
+                            {{ isset($grouped[$g]) ? $grouped[$g]->flatten(1)->count() : 0 }}
+                            <span class="fs-6 fw-normal opacity-75">nasabah</span>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
     </div>
-    @endforeach
 
     {{-- ── Filter ── --}}
     <div class="col-12 mb-4">
