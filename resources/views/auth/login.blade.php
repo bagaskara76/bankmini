@@ -187,7 +187,7 @@
             <div class="card-body">
                 <div class="text-center mb-4">
                     <div class="login-logo mb-3">
-                        <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMK Negeri 1 Bantul">
+                        <img src="{{ asset('images/logo-smea-lama.png') }}" alt="Logo SMK Negeri 1 Bantul">
                     </div>
                     <h3 class="login-heading">E-Teller Bank Mini</h3>
                     <p class="text-muted">Silakan login untuk mengakses sistem</p>
