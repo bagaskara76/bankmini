@@ -78,23 +78,32 @@
 @endpush
 
 @section('content')
-<div class="row mt-4">
+<div class="row row-cols-1 row-cols-md-3 row-cols-xl-5 mt-4">
     <div class="col-12 mb-3 d-flex align-items-center gap-3">
         <div>
             <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Data Nasabah per Kelas</h3>
-            <p class="text-muted mb-0 small">Daftar nama nasabah aktif dikelompokkan berdasarkan tingkat dan kelas</p>
+            <p class="text-muted mb-0 small">Daftar nasabah aktif dan alumni dikelompokkan berdasarkan tingkat dan kelas</p>
         </div>
+        <a href="{{ route('admin.class_promotion') }}" class="btn btn-primary ms-auto text-nowrap">
+            <i class="bi bi-arrow-up-right-circle me-1"></i> Kenaikan Kelas
+        </a>
     </div>
 
     {{-- ── Statistik Ringkas ── --}}
-    <div class="col-md-3 mb-3">
+    <div class="col mb-3">
         <div class="stat-card" style="background: linear-gradient(135deg,#2a5298,#1e3c72);">
-            <div class="small opacity-75 mb-1"><i class="bi bi-people me-1"></i> Total Nasabah</div>
+            <div class="small opacity-75 mb-1"><i class="bi bi-people me-1"></i> Total Nasabah Aktif</div>
             <div class="fs-2 fw-bold">{{ $totalNasabah }}</div>
         </div>
     </div>
+    <div class="col mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg,#475569,#1e293b);">
+            <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Total Alumni</div>
+            <div class="fs-2 fw-bold">{{ $totalAlumni }}</div>
+        </div>
+    </div>
     @foreach([10 => ['#2a5298','#1e3c72'], 11 => ['#6d28d9','#4c1d95'], 12 => ['#b45309','#78350f']] as $g => $colors)
-    <div class="col-md-3 mb-3">
+    <div class="col mb-3">
         <div class="stat-card" style="background: linear-gradient(135deg,{{ $colors[0] }},{{ $colors[1] }});">
             <div class="small opacity-75 mb-1"><i class="bi bi-mortarboard me-1"></i> Kelas {{ $g }}</div>
             <div class="fs-2 fw-bold">
@@ -142,6 +151,10 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <div class="col-12 mb-2">
+        <h4 class="fw-bold mb-0">Nasabah Aktif</h4>
     </div>
 
     {{-- ── Konten Per Angkatan ── --}}
@@ -258,6 +271,52 @@
         </div>
         @endforelse
     </div>
+
+    <div class="col-12 mt-3">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h4 class="fw-bold mb-0">Nasabah Lulus / Alumni</h4>
+            <span class="badge text-bg-secondary">{{ $totalAlumni }} nasabah</span>
+        </div>
+        <div class="card overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Kelas Terakhir</th>
+                            <th>Nama Nasabah</th>
+                            <th>No. Rekening</th>
+                            <th>Saldo</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($alumniGrouped->sortKeys() as $alumniGrade => $alumniByKelas)
+                            @foreach($alumniByKelas->sortKeys() as $alumniClass => $alumniCustomers)
+                                @foreach($alumniCustomers->sortBy(fn ($student) => optional($student->user)->name) as $alumni)
+                                    <tr class="alumni-row">
+                                        <td class="ps-3">Kelas {{ $alumniGrade }} {{ $alumniClass }}</td>
+                                        <td>
+                                            <span class="nasabah-name fw-medium">{{ optional($alumni->user)->name ?? '-' }}</span>
+                                            @if(optional($alumni->user)->is_blocked)
+                                                <span class="badge bg-danger ms-1" style="font-size:.65rem">Blokir</span>
+                                            @endif
+                                        </td>
+                                        <td><code class="small">{{ $alumni->account_number }}</code></td>
+                                        <td class="small text-nowrap">Rp {{ number_format($alumni->balance, 0, ',', '.') }}</td>
+                                        <td><span class="badge text-bg-secondary">Lulus</span></td>
+                                    </tr>
+                                @endforeach
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Belum ada nasabah yang ditandai lulus.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -266,7 +325,7 @@
 // ── Live search across all nasabah rows ──
 document.getElementById('searchBox').addEventListener('input', function () {
     const q = this.value.toLowerCase().trim();
-    document.querySelectorAll('.nasabah-row').forEach(row => {
+    document.querySelectorAll('.nasabah-row, .alumni-row').forEach(row => {
         const name = row.querySelector('.nasabah-name')?.textContent.toLowerCase() ?? '';
         const acc  = row.querySelector('code')?.textContent.toLowerCase() ?? '';
         row.style.display = (!q || name.includes(q) || acc.includes(q)) ? '' : 'none';

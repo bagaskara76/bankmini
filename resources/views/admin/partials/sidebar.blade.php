@@ -30,6 +30,11 @@
            @if(request()->routeIs('admin.nasabah_kelas')) aria-current="page" @endif>
             Nasabah per Kelas
         </a>
+        <a class="nav-link {{ request()->routeIs('admin.class_promotion*') ? 'active' : '' }}"
+           href="{{ route('admin.class_promotion') }}"
+           @if(request()->routeIs('admin.class_promotion*')) aria-current="page" @endif>
+            Kenaikan Kelas
+        </a>
     </div>
 
     <div class="admin-sidebar__group">

@@ -21,6 +21,7 @@ class AdminAccessTest extends TestCase
             'admin.members.index',
             'admin.data_saver',
             'admin.nasabah_kelas',
+            'admin.class_promotion',
             'admin.verify_reports',
             'admin.monthly_reports',
             'admin.audit_journal',
@@ -31,6 +32,8 @@ class AdminAccessTest extends TestCase
         $this->get('/admin/dashboard')
             ->assertOk()
             ->assertSee('Daftar Nasabah per Kelas')
+            ->assertSee('Kenaikan Kelas')
+            ->assertSee(route('admin.class_promotion'), false)
             ->assertSee('Selisih Kas')
             ->assertDontSee('aria-label="Menu administrator"', false);
         $verifyReportsPage = $this->get('/admin/verify-reports')
@@ -41,6 +44,8 @@ class AdminAccessTest extends TestCase
         }
         $verifyReportsPage->assertSee('Selisih Kas')
             ->assertDontSee('Penyelesaian Selisih Kas');
+        $verifyReportsPage->assertSee('Kenaikan Kelas')
+            ->assertSee(route('admin.class_promotion'), false);
         $verifyReportsPage->assertSee('Kas Brankas')
             ->assertDontSee('Otorisasi Pemindahan Kas');
         $this->post('/admin/transfer-approval/1/approve')->assertNotFound();
@@ -49,7 +54,8 @@ class AdminAccessTest extends TestCase
         $this->get('/admin/nasabah-kelas')
             ->assertOk()
             ->assertDontSee('Rangkuman Data Nasabah per Kelas')
-            ->assertSee('Daftar nama nasabah aktif dikelompokkan berdasarkan tingkat dan kelas')
+            ->assertSee('Daftar nasabah aktif dan alumni dikelompokkan berdasarkan tingkat dan kelas')
+            ->assertSee('Nasabah Lulus / Alumni')
             ->assertDontSee('Navigasi anggota dan nasabah')
             ->assertSee('LPS 1')
             ->assertSee('LPS 2');

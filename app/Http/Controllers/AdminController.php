@@ -620,32 +620,178 @@ class AdminController extends Controller
 
         $query = Customer::with('user')
             ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+            ->where('is_graduated', false)
+            ->orderBy('grade')
+            ->orderBy('kelas');
+
+        $alumniQuery = Customer::with('user')
+            ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+            ->where('is_graduated', true)
             ->orderBy('grade')
             ->orderBy('kelas');
 
         if ($gradeFilter) {
             $query->where('grade', $gradeFilter);
+            $alumniQuery->where('grade', $gradeFilter);
         }
         if ($kelasFilter) {
             $query->where('kelas', $kelasFilter);
+            $alumniQuery->where('kelas', $kelasFilter);
         }
 
         // Kelompokkan: grade -> kelas -> daftar nasabah
         $grouped = $query->get()
             ->groupBy('grade')
             ->map(fn ($byGrade) => $byGrade->groupBy('kelas'));
+        $alumniGrouped = $alumniQuery->get()
+            ->groupBy('grade')
+            ->map(fn ($byGrade) => $byGrade->groupBy('kelas'));
 
         // Statistik ringkas
         $totalNasabah = $grouped->flatten(2)->count();
+        $totalAlumni = $alumniGrouped->flatten(2)->count();
 
         $gradeList = [10, 11, 12];
         $kelasList = Customer::availableKelas();
 
         return view('admin.nasabah_kelas', compact(
-            'grouped', 'totalNasabah',
+            'grouped', 'alumniGrouped', 'totalNasabah', 'totalAlumni',
             'gradeList', 'kelasList',
             'gradeFilter', 'kelasFilter'
         ));
+    }
+
+    public function classPromotion(Request $request)
+    {
+        $validated = $request->validate([
+            'grade' => ['nullable', 'integer', 'in:10,11,12'],
+        ]);
+        $grade = (int) ($validated['grade'] ?? 10);
+        $sourceClasses = Customer::availableKelas((string) $grade);
+        $sourceClass = $request->validate([
+            'source_class' => ['nullable', 'string', 'in:'.implode(',', $sourceClasses)],
+        ])['source_class'] ?? null;
+        $customers = $sourceClass
+            ? Customer::with('user')
+                ->where('grade', $grade)
+                ->where('kelas', $sourceClass)
+                ->where('is_graduated', false)
+                ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+                ->orderBy('id')
+                ->get()
+            : collect();
+
+        $destinationGrade = $grade < 12 ? $grade + 1 : null;
+        $destinationClasses = $destinationGrade
+            ? Customer::availableKelas((string) $destinationGrade)
+            : [];
+        $destinationCounts = $destinationGrade
+            ? Customer::query()
+                ->where('grade', $destinationGrade)
+                ->where('is_graduated', false)
+                ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+                ->selectRaw('kelas, COUNT(*) as total')
+                ->groupBy('kelas')
+                ->pluck('total', 'kelas')
+            : collect();
+
+        return view('admin.class_promotion', compact(
+            'grade',
+            'sourceClass',
+            'sourceClasses',
+            'customers',
+            'destinationGrade',
+            'destinationClasses',
+            'destinationCounts'
+        ));
+    }
+
+    public function promoteCustomers(Request $request)
+    {
+        $validated = $request->validate([
+            'source_grade' => ['required', 'integer', 'in:10,11,12'],
+            'source_class' => [
+                'required',
+                'string',
+                'in:'.implode(',', Customer::availableKelas((string) $request->input('source_grade'))),
+            ],
+            'customer_ids' => ['required', 'array', 'min:1'],
+            'customer_ids.*' => ['required', 'integer', 'distinct', 'exists:customers,id'],
+        ], [
+            'customer_ids.required' => 'Pilih setidaknya satu nasabah untuk diproses.',
+            'customer_ids.min' => 'Pilih setidaknya satu nasabah untuk diproses.',
+        ]);
+
+        $sourceGrade = (int) $validated['source_grade'];
+        $destinationGrade = $sourceGrade < 12 ? $sourceGrade + 1 : null;
+        if ($destinationGrade) {
+            $validated = array_merge($validated, $request->validate([
+                'destination_class' => [
+                    'required',
+                    'string',
+                    'in:'.implode(',', Customer::availableKelas((string) $destinationGrade)),
+                ],
+            ]));
+        }
+
+        $processedCount = DB::transaction(function () use ($validated, $sourceGrade, $destinationGrade) {
+            $customers = Customer::query()
+                ->whereIn('id', $validated['customer_ids'])
+                ->where('grade', $sourceGrade)
+                ->where('kelas', $validated['source_class'])
+                ->where('is_graduated', false)
+                ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+                ->lockForUpdate()
+                ->get();
+
+            if ($customers->count() !== count($validated['customer_ids'])) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'customer_ids' => 'Sebagian nasabah sudah berubah kelas atau tidak lagi aktif. Muat ulang halaman.',
+                ]);
+            }
+
+            if ($destinationGrade) {
+                $destinationClass = $validated['destination_class'];
+                $destinationCount = Customer::query()
+                    ->where('grade', $destinationGrade)
+                    ->where('kelas', $destinationClass)
+                    ->where('is_graduated', false)
+                    ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
+                    ->lockForUpdate()
+                    ->count();
+
+                if ($destinationCount + $customers->count() > Customer::MAX_CLASS_SIZE) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'destination_class' => 'Rombel tujuan hanya dapat menampung maksimal '.Customer::MAX_CLASS_SIZE.' nasabah.',
+                    ]);
+                }
+
+                foreach ($customers as $customer) {
+                    $customer->grade = $destinationGrade;
+                    $customer->kelas = $destinationClass;
+                    $customer->save();
+                }
+
+                return $customers->count();
+            }
+
+            foreach ($customers as $customer) {
+                $customer->is_graduated = true;
+                $customer->save();
+            }
+
+            return $customers->count();
+        });
+
+        $message = $destinationGrade
+            ? $processedCount.' nasabah berhasil dinaikkan ke kelas '.$destinationGrade.' '.$validated['destination_class'].'.'
+            : $processedCount.' nasabah berhasil ditandai sebagai lulusan.';
+
+        return redirect()->route('admin.class_promotion', [
+            'grade' => $sourceGrade,
+            'source_class' => $validated['source_class'],
+        ])
+            ->with('success', $message);
     }
 
     // Example helper to generate an account number based on academic year and student id

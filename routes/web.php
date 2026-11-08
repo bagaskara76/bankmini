@@ -40,6 +40,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/admin/customers/{customer}', [\App\Http\Controllers\AdminController::class, 'deleteCustomer'])->name('admin.customers.delete');
     Route::get('/admin/audit-journal', [\App\Http\Controllers\AdminController::class, 'auditJournal'])->name('admin.audit_journal');
     Route::get('/admin/nasabah-kelas', [\App\Http\Controllers\AdminController::class, 'nasabahKelas'])->name('admin.nasabah_kelas');
+    Route::get('/admin/kenaikan-kelas', [\App\Http\Controllers\AdminController::class, 'classPromotion'])->name('admin.class_promotion');
+    Route::post('/admin/kenaikan-kelas', [\App\Http\Controllers\AdminController::class, 'promoteCustomers'])->name('admin.class_promotion.process');
     Route::get('/admin/verify-reports', [\App\Http\Controllers\AdminController::class, 'verifyReports'])->name('admin.verify_reports');
     Route::get('/admin/verify-reports/{report}', [\App\Http\Controllers\AdminController::class, 'reviewReport'])->name('admin.review_report');
     Route::get('/admin/monthly-reports', [\App\Http\Controllers\AdminController::class, 'monthlyReports'])->name('admin.monthly_reports');

@@ -102,6 +102,13 @@
                     <a href="{{ route('admin.nasabah_kelas') }}" class="stretched-link" aria-label="Buka daftar nasabah aktif per kelas"></a>
                 </article>
             </div>
+            <div class="col">
+                <article class="card admin-menu-card">
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-arrow-up-right-circle admin-menu-card__icon"></i><span>Kenaikan Kelas</span></h3>
+                    <p class="admin-menu-card__description">Pilih siswa yang naik kelas atau lulus. Siswa yang tidak dicentang tetap di kelas asal.</p>
+                    <a href="{{ route('admin.class_promotion') }}" class="stretched-link" aria-label="Buka fitur kenaikan kelas"></a>
+                </article>
+            </div>
         </div>
     </section>
 
