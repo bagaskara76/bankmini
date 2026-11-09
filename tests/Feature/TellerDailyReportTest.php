@@ -172,4 +172,82 @@ class TellerDailyReportTest extends TestCase
             'type' => 'withdrawal',
         ]);
     }
+
+    public function test_multiple_tellers_share_modal_awal_and_transactions_and_submission(): void
+    {
+        $tellerA = User::factory()->create(['name' => 'Teller 1', 'role' => 'teller']);
+        $tellerB = User::factory()->create(['name' => 'Teller 2', 'role' => 'teller']);
+
+        $customerUser = User::factory()->create(['name' => 'Siswa Nasabah', 'role' => 'customer']);
+        $customer = Customer::create([
+            'user_id' => $customerUser->id,
+            'account_number' => '2026110901',
+            'pin' => Hash::make('123456'),
+            'qr_code_string' => 'QR-2026110901',
+            'balance' => 50000,
+            'grade' => 10,
+            'kelas' => 'RPL 1',
+        ]);
+
+        // Teller 1 mencatat modal awal
+        $this->actingAs($tellerA)
+            ->post(route('teller.initial_capital'), ['initial_capital' => 200000])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        // Teller 2 melihat modal awal sudah tersimpan otomatis
+        $this->actingAs($tellerB)
+            ->get(route('teller.dashboard'))
+            ->assertOk()
+            ->assertSee('Rp 200.000')
+            ->assertSee('Tambah Modal Awal');
+
+        // Teller 1 memproses setoran nasabah Rp 30.000
+        $this->actingAs($tellerA)
+            ->post(route('teller.deposit', $customer), [
+                'amount' => 30000,
+                'note' => 'Setoran Teller 1',
+            ])
+            ->assertRedirect();
+
+        // Teller 2 memproses penarikan nasabah Rp 10.000 (bisa karena modal awal sudah tersimpan oleh Teller 1)
+        $this->actingAs($tellerB)
+            ->post(route('teller.withdraw', $customer), [
+                'amount' => 10000,
+                'pin' => '123456',
+                'note' => 'Penarikan Teller 2',
+            ])
+            ->assertRedirect();
+
+        // Cek laporan harian bersama:
+        // Modal awal 200.000 + Setoran 30.000 - Penarikan 10.000 = Kas Sistem 220.000
+        $report = DailyReport::whereDate('report_date', now()->toDateString())->firstOrFail();
+        $this->assertSame(200000, (int) $report->initial_capital);
+        $this->assertSame(30000, (int) $report->total_deposit);
+        $this->assertSame(10000, (int) $report->total_withdrawal);
+        $this->assertSame(220000, (int) $report->system_cash);
+
+        // Teller 2 mengajukan laporan fisik bersama
+        $this->actingAs($tellerB)
+            ->post(route('teller.daily_report.submit'), ['physical_cash' => 220000])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $report->refresh();
+        $this->assertSame('pending', $report->status);
+
+        // Teller 1 membuka dashboard dan melihat status sudah pending
+        $this->actingAs($tellerA)
+            ->get(route('teller.dashboard'))
+            ->assertOk()
+            ->assertSee('Laporan hari ini sedang pending.');
+
+        // Teller 1 tidak dapat lagi melakukan transaksi baru karena laporan harian sudah diajukan
+        $this->actingAs($tellerA)
+            ->post(route('teller.deposit', $customer), [
+                'amount' => 5000,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Transaksi baru tidak dapat diproses karena laporan harian sudah diajukan.');
+    }
 }

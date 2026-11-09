@@ -29,20 +29,21 @@
     <h3 class="section-title">Detail Transaksi Hari Itu</h3>
     <table>
         <thead>
-            <tr><th>No.</th><th>Jam</th><th>Nasabah</th><th>Jenis Transaksi</th><th class="amount">Nominal</th><th>Status</th></tr>
+            <tr><th>No.</th><th>Jam</th><th>Teller</th><th>Nasabah</th><th>Jenis Transaksi</th><th class="amount">Nominal</th><th>Status</th></tr>
         </thead>
         <tbody>
             @forelse($transactions as $transaction)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $transaction->created_at->format('H:i:s') }} WIB</td>
+                    <td>{{ optional($transaction->teller)->name ?? '-' }}</td>
                     <td>{{ optional(optional($transaction->customer)->user)->name ?? 'Nasabah tidak ditemukan' }}</td>
                     <td>{{ $transaction->type === 'deposit' ? 'Setoran' : 'Penarikan' }}</td>
                     <td class="amount">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
                     <td>{{ ucfirst(str_replace('_', ' ', $transaction->status)) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" style="text-align: center;">Tidak ada transaksi pada hari ini.</td></tr>
+                <tr><td colspan="7" style="text-align: center;">Tidak ada transaksi pada hari ini.</td></tr>
             @endforelse
         </tbody>
     </table>

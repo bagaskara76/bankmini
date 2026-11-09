@@ -43,18 +43,19 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-striped align-middle mb-0">
-                    <thead><tr><th>Waktu</th><th>Nasabah</th><th>Jenis</th><th class="text-end">Nominal</th><th>Catatan</th></tr></thead>
+                    <thead><tr><th>Waktu</th><th>Teller</th><th>Nasabah</th><th>Jenis</th><th class="text-end">Nominal</th><th>Catatan</th></tr></thead>
                     <tbody>
                         @forelse($transactions as $transaction)
                             <tr>
                                 <td>{{ $transaction->created_at->format('H:i:s') }}</td>
+                                <td><span class="badge bg-secondary">{{ optional($transaction->teller)->name ?? '-' }}</span></td>
                                 <td>{{ optional(optional($transaction->customer)->user)->name ?? 'Nasabah tidak ditemukan' }}</td>
                                 <td>{{ $transaction->type === 'deposit' ? 'Setoran' : 'Penarikan' }}</td>
                                 <td class="text-end">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
                                 <td>{{ $transaction->note ?: '-' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center text-muted py-4">Tidak ada transaksi berhasil pada tanggal ini.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada transaksi berhasil pada tanggal ini.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -39,9 +39,9 @@ class AdminController extends Controller
         abort_unless($report->status === 'pending', 404);
 
         $report->load('teller');
-        $transactions = Transaction::with('customer.user')
-            ->where('teller_id', $report->teller_id)
-            ->whereDate('created_at', $report->getRawOriginal('report_date'))
+        $reportDate = $report->getRawOriginal('report_date') ?? $report->report_date->toDateString();
+        $transactions = Transaction::with(['customer.user', 'teller'])
+            ->whereDate('created_at', $reportDate)
             ->where('status', 'completed')
             ->orderBy('created_at')
             ->get();
@@ -84,7 +84,6 @@ class AdminController extends Controller
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('daily_reports')
-                    ->whereColumn('daily_reports.teller_id', 'transactions.teller_id')
                     ->whereRaw('daily_reports.report_date = DATE(transactions.created_at)')
                     ->where('daily_reports.status', 'approved');
             });
@@ -197,9 +196,10 @@ class AdminController extends Controller
         abort_unless($report->status === 'approved', 404);
 
         $report->load(['teller', 'reviewedBy']);
-        $transactions = Transaction::with('customer.user')
-            ->where('teller_id', $report->teller_id)
-            ->whereDate('created_at', $report->getRawOriginal('report_date'))
+        $reportDate = $report->getRawOriginal('report_date') ?? $report->report_date->toDateString();
+        $transactions = Transaction::with(['customer.user', 'teller'])
+            ->whereDate('created_at', $reportDate)
+            ->where('status', 'completed')
             ->orderBy('created_at')
             ->get();
 

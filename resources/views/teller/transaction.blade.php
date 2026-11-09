@@ -161,7 +161,13 @@
                         <label class="form-label" for="depositNote">Catatan</label>
                         <textarea id="depositNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
                     </div>
-                    <button type="button" class="btn transaction-action-button w-100" id="depositConfirmButton">
+                    @if($dailyReport->status !== 'draft')
+                        <div class="alert alert-danger small mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Transaksi baru tidak dapat diproses karena laporan kas harian sudah diajukan (Status: <strong>{{ ucfirst($dailyReport->status) }}</strong>).
+                        </div>
+                    @endif
+                    <button type="button" class="btn transaction-action-button w-100" id="depositConfirmButton" @disabled($dailyReport->status !== 'draft')>
                         Proses Setoran
                     </button>
                 </form>
@@ -191,12 +197,18 @@
                         <label class="form-label" for="withdrawalNote">Catatan</label>
                         <textarea id="withdrawalNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
                     </div>
+                    @if($dailyReport->status !== 'draft')
+                        <div class="alert alert-danger small mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Transaksi baru tidak dapat diproses karena laporan kas harian sudah diajukan (Status: <strong>{{ ucfirst($dailyReport->status) }}</strong>).
+                        </div>
+                    @endif
                     @if($dailyReport->initial_capital <= 0)
                         <div class="alert alert-warning small">
                             Catat modal awal hari ini di Dashboard Teller sebelum melakukan penarikan.
                         </div>
                     @endif
-                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton" @disabled($dailyReport->initial_capital <= 0)>
+                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton" @disabled($dailyReport->initial_capital <= 0 || $dailyReport->status !== 'draft')>
                         Proses Penarikan
                     </button>
                 </form>

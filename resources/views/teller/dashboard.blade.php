@@ -228,12 +228,30 @@
 </div>
 
 <div class="card mb-4"><div class="card-body">
-    <h5 class="fw-bold">Transaksi Hari Ini</h5>
-    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Waktu</th><th>Nasabah</th><th>Jenis</th><th>Nominal</th></tr></thead><tbody>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Transaksi Hari Ini</h5>
+        <span class="badge bg-light text-dark border">Seluruh Teller</span>
+    </div>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Waktu</th><th>Teller</th><th>Nasabah</th><th>Jenis</th><th>Nominal</th></tr></thead><tbody>
     @forelse($transactions as $transaction)
-        <tr><td>{{ $transaction->created_at->format('H:i:s') }} WIB</td><td>{{ optional(optional($transaction->customer)->user)->name ?? 'Nasabah tidak ditemukan' }}</td><td>{{ $transaction->type === 'deposit' ? 'Setoran' : 'Penarikan' }}</td><td>Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td></tr>
+        <tr>
+            <td>{{ $transaction->created_at->format('H:i:s') }} WIB</td>
+            <td>
+                <span class="badge {{ $transaction->teller_id === Auth::id() ? 'bg-primary' : 'bg-secondary' }}">
+                    {{ optional($transaction->teller)->name ?? 'Teller' }}
+                    @if($transaction->teller_id === Auth::id()) (Anda) @endif
+                </span>
+            </td>
+            <td>{{ optional(optional($transaction->customer)->user)->name ?? 'Nasabah tidak ditemukan' }}</td>
+            <td>
+                <span class="badge {{ $transaction->type === 'deposit' ? 'bg-success' : 'bg-danger' }}">
+                    {{ $transaction->type === 'deposit' ? 'Setoran' : 'Penarikan' }}
+                </span>
+            </td>
+            <td class="fw-semibold">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+        </tr>
     @empty
-        <tr><td colspan="4" class="text-center text-muted">Belum ada transaksi hari ini.</td></tr>
+        <tr><td colspan="5" class="text-center text-muted py-3">Belum ada transaksi hari ini.</td></tr>
     @endforelse
     </tbody></table></div>
 </div></div>

@@ -17,34 +17,32 @@ class TellerController extends Controller
     public function dashboard()
     {
         $today = now()->toDateString();
-        $dailyReport = DailyReport::firstOrCreate(
-            ['teller_id' => Auth::id(), 'report_date' => $today],
-            ['status' => 'draft']
-        );
+        $dailyReport = $this->todayReport();
+        $this->refreshSystemCash($dailyReport);
 
-        $totalDeposit = Transaction::where('teller_id', Auth::id())
+        $totalDeposit = (int) Transaction::whereDate('created_at', $today)
             ->where('type', 'deposit')
-            ->whereDate('created_at', $today)
+            ->where('status', 'completed')
             ->sum('amount');
 
-        $countDeposit = Transaction::where('teller_id', Auth::id())
+        $countDeposit = Transaction::whereDate('created_at', $today)
             ->where('type', 'deposit')
-            ->whereDate('created_at', $today)
+            ->where('status', 'completed')
             ->count();
 
-        $totalWithdrawal = Transaction::where('teller_id', Auth::id())
+        $totalWithdrawal = (int) Transaction::whereDate('created_at', $today)
             ->where('type', 'withdrawal')
-            ->whereDate('created_at', $today)
+            ->where('status', 'completed')
             ->sum('amount');
 
-        $countWithdrawal = Transaction::where('teller_id', Auth::id())
+        $countWithdrawal = Transaction::whereDate('created_at', $today)
             ->where('type', 'withdrawal')
-            ->whereDate('created_at', $today)
+            ->where('status', 'completed')
             ->count();
 
-        $transactions = Transaction::with('customer.user')
-            ->where('teller_id', Auth::id())
+        $transactions = Transaction::with(['customer.user', 'teller'])
             ->whereDate('created_at', $today)
+            ->where('status', 'completed')
             ->latest()
             ->get();
 
@@ -91,9 +89,9 @@ class TellerController extends Controller
         }
 
         $added = DB::transaction(function () use ($validated) {
+            $today = now()->toDateString();
             $report = DailyReport::query()
-                ->where('teller_id', Auth::id())
-                ->whereDate('report_date', now()->toDateString())
+                ->whereDate('report_date', $today)
                 ->lockForUpdate()
                 ->firstOrFail();
 
@@ -102,9 +100,7 @@ class TellerController extends Controller
             }
 
             $report->additional_capital += $validated['amount'];
-            $report->system_cash = $report->initial_capital + $report->additional_capital
-                + $report->total_deposit - $report->total_withdrawal;
-            $report->save();
+            $this->refreshSystemCash($report);
 
             return true;
         });
@@ -132,8 +128,8 @@ class TellerController extends Controller
             'physical_cash.min' => 'Kas fisik tidak boleh kurang dari 0.',
         ]);
 
-        $report->system_cash = $report->initial_capital + $report->additional_capital
-            + $report->total_deposit - $report->total_withdrawal;
+        $this->refreshSystemCash($report);
+        $report->teller_id = Auth::id();
         $report->physical_cash = $validated['physical_cash'];
         $report->status = 'pending';
         $report->reviewed_by = null;
@@ -145,16 +141,46 @@ class TellerController extends Controller
 
     private function todayReport(): DailyReport
     {
-        return DailyReport::firstOrCreate(
-            ['teller_id' => Auth::id(), 'report_date' => now()->toDateString()],
-            ['status' => 'draft']
-        );
+        $today = now()->toDateString();
+        $report = DailyReport::whereDate('report_date', $today)->first();
+
+        if (!$report) {
+            $report = DailyReport::create([
+                'teller_id' => Auth::id(),
+                'report_date' => $today,
+                'status' => 'draft',
+                'initial_capital' => 0,
+                'additional_capital' => 0,
+                'total_deposit' => 0,
+                'total_withdrawal' => 0,
+                'system_cash' => 0,
+                'physical_cash' => 0,
+            ]);
+        }
+
+        return $report;
     }
 
     private function refreshSystemCash(DailyReport $report): void
     {
-        $report->system_cash = $report->initial_capital + $report->additional_capital
-            + $report->total_deposit - $report->total_withdrawal;
+        $date = $report->getRawOriginal('report_date') ?? $report->report_date->toDateString();
+
+        $totalDeposit = (int) Transaction::whereDate('created_at', $date)
+            ->where('type', 'deposit')
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        $totalWithdrawal = (int) Transaction::whereDate('created_at', $date)
+            ->where('type', 'withdrawal')
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        $report->total_deposit = $totalDeposit;
+        $report->total_withdrawal = $totalWithdrawal;
+        $report->system_cash = (int) $report->initial_capital
+            + (int) $report->additional_capital
+            + $totalDeposit
+            - $totalWithdrawal;
         $report->save();
     }
 
@@ -247,20 +273,23 @@ class TellerController extends Controller
                     'amount' => $amount
                 ]);
 
-                $report = DailyReport::firstOrCreate(
-                    [
+                $today = now()->toDateString();
+                $report = DailyReport::whereDate('report_date', $today)->lockForUpdate()->first();
+                if (!$report) {
+                    $report = DailyReport::create([
                         'teller_id' => Auth::id(),
-                        'report_date' => now()->toDateString(),
-                    ],
-                    [
+                        'report_date' => $today,
                         'status' => 'draft',
-                    ]
-                );
+                        'initial_capital' => 0,
+                        'additional_capital' => 0,
+                        'total_deposit' => 0,
+                        'total_withdrawal' => 0,
+                        'system_cash' => 0,
+                        'physical_cash' => 0,
+                    ]);
+                }
 
-                $report->total_deposit += $amount;
-                $report->system_cash = $report->initial_capital + $report->additional_capital
-                    + $report->total_deposit - $report->total_withdrawal;
-                $report->save();
+                $this->refreshSystemCash($report);
 
                 return $trx;
             });
@@ -352,20 +381,23 @@ class TellerController extends Controller
                     'amount' => $amount
                 ]);
 
-                $report = DailyReport::firstOrCreate(
-                    [
+                $today = now()->toDateString();
+                $report = DailyReport::whereDate('report_date', $today)->lockForUpdate()->first();
+                if (!$report) {
+                    $report = DailyReport::create([
                         'teller_id' => Auth::id(),
-                        'report_date' => now()->toDateString(),
-                    ],
-                    [
+                        'report_date' => $today,
                         'status' => 'draft',
-                    ]
-                );
+                        'initial_capital' => 0,
+                        'additional_capital' => 0,
+                        'total_deposit' => 0,
+                        'total_withdrawal' => 0,
+                        'system_cash' => 0,
+                        'physical_cash' => 0,
+                    ]);
+                }
 
-                $report->total_withdrawal += $amount;
-                $report->system_cash = $report->initial_capital + $report->additional_capital
-                    + $report->total_deposit - $report->total_withdrawal;
-                $report->save();
+                $this->refreshSystemCash($report);
 
                 return $trx;
             });
