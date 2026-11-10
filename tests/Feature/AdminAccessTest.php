@@ -35,6 +35,7 @@ class AdminAccessTest extends TestCase
             ->assertSee(route('admin.class_promotion'), false)
             ->assertSee('Selisih Kas')
             ->assertDontSee('Audit Jurnal Akuntansi')
+            ->assertDontSee('Email Pemulihan OTP')
             ->assertDontSee('aria-label="Menu administrator"', false);
         $verifyReportsPage = $this->get('/admin/verify-reports')
             ->assertOk()

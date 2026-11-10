@@ -112,19 +112,6 @@
         </div>
     </section>
 
-    <section class="admin-dashboard__section" aria-labelledby="admin-approval-title">
-        <h2 class="admin-dashboard__section-title" id="admin-approval-title">Persetujuan &amp; Keamanan</h2>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
-            <div class="col">
-                <article class="card admin-menu-card">
-                    <h3 class="admin-menu-card__heading"><i class="bi bi-envelope-check admin-menu-card__icon"></i><span>Email Pemulihan OTP</span></h3>
-                    <p class="admin-menu-card__description">Daftarkan atau perbarui email nasabah untuk menerima OTP pemulihan akun.</p>
-                    <a href="{{ route('admin.data_saver') }}" class="stretched-link" aria-label="Kelola email OTP nasabah"></a>
-                </article>
-            </div>
-        </div>
-    </section>
-
     <section class="admin-dashboard__section" aria-labelledby="admin-operations-title">
         <h2 class="admin-dashboard__section-title" id="admin-operations-title">Laporan &amp; Operasional Kas</h2>
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
