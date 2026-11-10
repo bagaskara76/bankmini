@@ -171,7 +171,7 @@
             <div class="nav-links">
                 <a href="#tentang">Tentang</a>
                 <a href="#fitur">Fitur</a>
-                <a class="button" href="{{ route('login') }}">Login <span aria-hidden="true">&rarr;</span></a>
+                <a class="button" href="{{ route('login') }}">Login</a>
             </div>
         </nav>
     </header>
@@ -184,7 +184,7 @@
                     <h1>Belajar mengelola uang, <span>dimulai dari sekolah.</span></h1>
                     <p class="hero-copy">E-Teller Bank Mini membantu siswa dan petugas sekolah mencatat layanan tabungan dengan lebih teratur, mudah dipantau, dan transparan.</p>
                     <div class="hero-actions">
-                        <a class="button" href="{{ route('login') }}">Login <span aria-hidden="true">&rarr;</span></a>
+                        <a class="button" href="{{ route('login') }}">Login</a>
                         <a class="button button-outline" href="#tentang">Kenali Bank Mini</a>
                         <a class="button button-outline" href="{{ asset('app-release.apk') }}" download="e-teller-bank-mini.apk">Download Aplikasi Android</a>
                     </div>
@@ -288,7 +288,7 @@
                 <div class="cta">
                     <h2>Siap menggunakan E-Teller?</h2>
                     <p>Masuk menggunakan akun yang diberikan oleh pengelola Bank Mini sekolah untuk membuka layanan sesuai peran Anda.</p>
-                    <a class="button" href="{{ route('login') }}">Login ke E-Teller <span aria-hidden="true">&rarr;</span></a>
+                    <a class="button" href="{{ route('login') }}">Login ke E-Teller</a>
                 </div>
             </div>
         </section>
