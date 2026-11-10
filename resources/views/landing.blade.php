@@ -117,7 +117,6 @@
         .about-panel p { margin: 0; }
         .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
         .feature-card { min-height: 218px; padding: 25px; border: 1px solid var(--line); border-radius: 15px; background: white; }
-        .feature-icon { width: 46px; height: 46px; display: grid; place-items: center; margin-bottom: 21px; border-radius: 13px; background: var(--mint); color: var(--green); font-size: 21px; }
         .feature-card h3 { margin: 0 0 9px; font-size: 17px; font-weight: 800; }
         .feature-card p { margin: 0; color: var(--muted); font-size: 14px; }
         .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
@@ -231,32 +230,26 @@
                 </div>
                 <div class="feature-grid">
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">▤</span>
                         <h3>Informasi tabungan</h3>
                         <p>Nasabah dapat melihat ringkasan rekening, saldo, dan riwayat transaksi melalui dashboard.</p>
                     </article>
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">↕</span>
                         <h3>Setoran dan penarikan</h3>
                         <p>Teller memproses transaksi nasabah dan aplikasi menyimpan catatannya untuk ditinjau kembali.</p>
                     </article>
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">▦</span>
                         <h3>Kartu QR nasabah</h3>
                         <p>QR membantu teller mengenali rekening nasabah saat memberikan layanan transaksi.</p>
                     </article>
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">✓</span>
                         <h3>Pengelolaan oleh admin</h3>
                         <p>Admin mengelola pengguna dan data nasabah serta meninjau laporan dan transaksi tertentu.</p>
                     </article>
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">▧</span>
                         <h3>Laporan dan pencatatan</h3>
                         <p>Fitur laporan membantu petugas merangkum kegiatan dan pencatatan Bank Mini sekolah.</p>
                     </article>
                     <article class="feature-card">
-                        <span class="feature-icon" aria-hidden="true">⌑</span>
                         <h3>Akses sesuai peran</h3>
                         <p>Halaman dan tugas dibedakan untuk admin, teller, dan nasabah yang sudah memiliki akun.</p>
                     </article>
