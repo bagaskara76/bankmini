@@ -49,11 +49,6 @@
            @if(request()->routeIs('admin.monthly_reports*')) aria-current="page" @endif>
             Laporan Bulanan
         </a>
-        <a class="nav-link {{ request()->routeIs('admin.audit_journal') ? 'active' : '' }}"
-           href="{{ route('admin.audit_journal') }}"
-           @if(request()->routeIs('admin.audit_journal')) aria-current="page" @endif>
-            Audit Jurnal Akuntansi
-        </a>
         <a class="nav-link {{ request()->routeIs('admin.dispute_resolution') ? 'active' : '' }}"
            href="{{ route('admin.dispute_resolution') }}"
            @if(request()->routeIs('admin.dispute_resolution')) aria-current="page" @endif>

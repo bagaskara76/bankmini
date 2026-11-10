@@ -144,13 +144,6 @@
             </div>
             <div class="col">
                 <article class="card admin-menu-card">
-                    <h3 class="admin-menu-card__heading"><i class="bi bi-journal-text admin-menu-card__icon"></i><span>Audit Jurnal Akuntansi</span></h3>
-                    <p class="admin-menu-card__description">Akses baca jurnal akuntansi dan periksa sinkronisasi.</p>
-                    <a href="{{ route('admin.audit_journal') }}" class="stretched-link" aria-label="Buka Audit Jurnal Akuntansi"></a>
-                </article>
-            </div>
-            <div class="col">
-                <article class="card admin-menu-card">
                     <h3 class="admin-menu-card__heading"><i class="bi bi-search-heart admin-menu-card__icon"></i><span>Selisih Kas</span></h3>
                     <p class="admin-menu-card__description">Tinjau laporan yang ditolak dan selesaikan selisih kas.</p>
                     <a href="{{ route('admin.dispute_resolution') }}" class="stretched-link" aria-label="Buka Selisih Kas"></a>

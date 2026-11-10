@@ -24,7 +24,6 @@ class AdminAccessTest extends TestCase
             'admin.class_promotion',
             'admin.verify_reports',
             'admin.monthly_reports',
-            'admin.audit_journal',
             'admin.dispute_resolution',
             'admin.transfer_approval',
         ];
@@ -35,6 +34,7 @@ class AdminAccessTest extends TestCase
             ->assertSee('Kenaikan Kelas')
             ->assertSee(route('admin.class_promotion'), false)
             ->assertSee('Selisih Kas')
+            ->assertDontSee('Audit Jurnal Akuntansi')
             ->assertDontSee('aria-label="Menu administrator"', false);
         $verifyReportsPage = $this->get('/admin/verify-reports')
             ->assertOk()
@@ -44,6 +44,8 @@ class AdminAccessTest extends TestCase
         }
         $verifyReportsPage->assertSee('Selisih Kas')
             ->assertDontSee('Penyelesaian Selisih Kas');
+        $verifyReportsPage->assertDontSee('Audit Jurnal Akuntansi');
+        $this->get('/admin/audit-journal')->assertNotFound();
         $verifyReportsPage->assertSee('Kenaikan Kelas')
             ->assertSee(route('admin.class_promotion'), false);
         $verifyReportsPage->assertSee('Kas Brankas')
