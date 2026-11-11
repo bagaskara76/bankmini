@@ -2,10 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PinSessionController;
 
 Route::get('/', function () {
     return view('landing');
 })->name('home');
+
+// ── PIN Mobile Routes (tidak perlu login — akses via token unik) ──
+Route::get('/pin/{token}',        [PinSessionController::class, 'showEntry'])->name('pin.entry');
+Route::post('/pin/{token}',       [PinSessionController::class, 'submitPin'])->name('pin.submit');
+Route::get('/pin/{token}/status', [PinSessionController::class, 'checkStatus'])->name('pin.status');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -70,6 +76,8 @@ Route::middleware(['auth', 'role:teller'])->group(function () {
     Route::post('/teller/search', [\App\Http\Controllers\TellerController::class, 'searchCustomer'])->name('teller.search');
     Route::post('/teller/deposit/{customer}', [\App\Http\Controllers\TellerController::class, 'processDeposit'])->name('teller.deposit');
     Route::post('/teller/withdraw/{customer}', [\App\Http\Controllers\TellerController::class, 'processWithdrawal'])->name('teller.withdraw');
+    // PIN Session endpoint (dipanggil via AJAX dari teller)
+    Route::post('/teller/pin-session/{customer}', [PinSessionController::class, 'create'])->name('pin.create');
     Route::get('/teller/change-password', [\App\Http\Controllers\TellerController::class, 'showChangePassword'])->name('teller.change_password');
     Route::post('/teller/change-password', [\App\Http\Controllers\TellerController::class, 'updatePassword'])->name('teller.update_password');
 });

@@ -190,13 +190,17 @@
                 <i class="bi bi-arrow-up-circle"></i> Penarikan Tunai
             </div>
             <div class="card-body">
-                <form action="{{ route('teller.withdraw', $customer->id) }}" method="POST">
+                {{-- Form aktual dikirim setelah PIN diverifikasi lewat HP nasabah --}}
+                <form action="{{ route('teller.withdraw', $customer->id) }}" method="POST" id="withdrawForm">
                     @csrf
+                    <input type="hidden" name="amount" id="withdrawAmount">
+                    <input type="hidden" name="note"   id="withdrawNoteHidden">
+                    <input type="hidden" name="pin_session_token" id="pinSessionToken">
+
                     <div class="mb-3">
                         <label class="form-label">Nominal Penarikan (Rp)</label>
                         <input type="text" class="form-control form-control-lg amount-display" id="withdrawDisplay"
                                inputmode="numeric" placeholder="0" autocomplete="off">
-                        <input type="hidden" name="amount" id="withdrawAmount">
                         <div class="form-text text-danger">Saldo minimum mengendap: Rp 10.000</div>
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="10000">+10.000</button>
@@ -206,13 +210,10 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">PIN Nasabah (Otorisasi)</label>
-                        <input type="password" class="form-control text-center fs-4 letter-spacing-2" name="pin" maxlength="6" required placeholder="******">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label" for="withdrawalNote">Catatan</label>
-                        <textarea id="withdrawalNote" class="form-control" name="note" rows="2" maxlength="500"></textarea>
+                        <textarea id="withdrawalNote" class="form-control" rows="2" maxlength="500"></textarea>
                     </div>
+
                     @if($dailyReport->status !== 'draft')
                         <div class="alert alert-danger small mb-3">
                             <i class="bi bi-exclamation-triangle-fill me-1"></i>
@@ -224,10 +225,34 @@
                             Catat modal awal hari ini di Dashboard Teller sebelum melakukan penarikan.
                         </div>
                     @endif
-                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100" id="withdrawConfirmButton" @disabled($dailyReport->initial_capital <= 0 || $dailyReport->status !== 'draft')>
-                        Proses Penarikan
+
+                    {{-- Tombol: Minta PIN via HP nasabah --}}
+                    <button type="button" class="btn transaction-action-button transaction-withdrawal-button w-100"
+                            id="requestPinButton"
+                            @disabled($dailyReport->initial_capital <= 0 || $dailyReport->status !== 'draft')>
+                        <i class="bi bi-phone"></i> Minta PIN via HP Nasabah
                     </button>
                 </form>
+
+                {{-- Panel QR Code (muncul setelah klik tombol di atas) --}}
+                <div id="qrPanel" class="mt-3" style="display:none;">
+                    <div class="card border-warning">
+                        <div class="card-body text-center py-3">
+                            <p class="small fw-semibold mb-2">
+                                <i class="bi bi-qr-code-scan me-1"></i>
+                                Arahkan HP nasabah ke QR ini untuk memasukkan PIN
+                            </p>
+                            <div id="qrCodeContainer" class="mb-2"></div>
+                            <p class="small text-muted mb-1" id="qrUrlText" style="word-break:break-all;font-size:11px;"></p>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <div class="spinner-border spinner-border-sm text-warning" role="status" id="qrSpinner"></div>
+                                <span class="small text-muted" id="qrStatus">Menunggu nasabah memasukkan PIN…</span>
+                            </div>
+                            <div class="mt-2 small" id="qrTimer"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <hr>
                 <div class="small fw-semibold mb-2">Lupa PIN nasabah?</div>
                 <p class="small text-muted">Kirim OTP ke email terdaftar nasabah untuk verifikasi sebelum PIN diganti.</p>
@@ -241,6 +266,8 @@
 @endsection
 
 @push('scripts')
+{{-- QR Code library (ringan, tidak perlu install npm) --}}
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -295,7 +322,6 @@
 
         // ── Konfirmasi Setoran ──
         var depositButton = document.getElementById('depositConfirmButton');
-        var withdrawButton = document.getElementById('withdrawConfirmButton');
 
         if (depositButton) {
             depositButton.addEventListener('click', function () {
@@ -327,47 +353,113 @@
             });
         }
 
-        // ── Konfirmasi Penarikan ──
-        if (withdrawButton) {
-            withdrawButton.addEventListener('click', function () {
-                var withdrawForm = withdrawButton.closest('form');
-                var pinInput = withdrawForm.querySelector('input[name="pin"]');
+        // ══════════════════════════════════════════════════════════════
+        // ── PENARIKAN: PIN via HP Nasabah ─────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        var requestPinButton = document.getElementById('requestPinButton');
+        var pollingInterval  = null;
+
+        if (requestPinButton) {
+            requestPinButton.addEventListener('click', function () {
                 var amount = parseInt(document.getElementById('withdrawAmount').value || '0', 10);
-                var pin = pinInput ? pinInput.value : '';
+                var note   = document.getElementById('withdrawalNote').value;
 
                 if (!amount || amount <= 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Nominal tidak valid',
-                        text: 'Masukkan nominal penarikan yang benar.',
-                    });
+                    Swal.fire({ icon: 'error', title: 'Nominal tidak valid', text: 'Masukkan nominal penarikan terlebih dahulu.' });
                     return;
                 }
 
-                if (!pin || pin.length < 1) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'PIN dibutuhkan',
-                        text: 'Masukkan PIN nasabah untuk otorisasi.',
-                    });
-                    return;
-                }
+                // Buat PIN Session via AJAX
+                requestPinButton.disabled = true;
+                requestPinButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
 
-                Swal.fire({
-                    title: 'Konfirmasi Penarikan',
-                    html: 'Apakah Anda yakin data penarikan sudah benar?<br><strong>Rp ' + new Intl.NumberFormat('id-ID').format(amount) + '</strong>',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Ya, Proses Penarikan',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        withdrawForm.submit();
-                    }
+                fetch(@json(route('pin.create', $customer->id)), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ amount: amount, note: note })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (!data.token) throw new Error('Token tidak diterima');
+                    showQrPanel(data.mobile_url, amount, data.expires_at);
+                    startPolling(data.token, amount, note);
+                })
+                .catch(function() {
+                    requestPinButton.disabled = false;
+                    requestPinButton.innerHTML = '<i class="bi bi-phone"></i> Minta PIN via HP Nasabah';
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal membuat sesi PIN. Coba lagi.' });
                 });
             });
+        }
+
+        function showQrPanel(url, amount, expiresAtIso) {
+            var panel = document.getElementById('qrPanel');
+            panel.style.display = 'block';
+
+            // Generate QR Code ke canvas
+            var container = document.getElementById('qrCodeContainer');
+            container.innerHTML = '';
+            var canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+            QRCode.toCanvas(canvas, url, { width: 160, margin: 1 }, function(err) {
+                if (err) container.innerHTML = '<p class="small text-danger">QR gagal dibuat</p>';
+            });
+            document.getElementById('qrUrlText').textContent = url;
+
+            // Countdown timer
+            var expiresAt = new Date(expiresAtIso);
+            clearInterval(window._qrTimerInterval);
+            window._qrTimerInterval = setInterval(function() {
+                var diff = Math.max(0, Math.floor((expiresAt - new Date()) / 1000));
+                var m = Math.floor(diff / 60), s = diff % 60;
+                var timerEl = document.getElementById('qrTimer');
+                timerEl.textContent = 'Sesi habis dalam: ' + m + ':' + (s < 10 ? '0' : '') + s;
+                timerEl.className = 'mt-2 small ' + (diff <= 60 ? 'text-danger fw-bold' : 'text-muted');
+                if (diff === 0) { clearInterval(window._qrTimerInterval); timerEl.textContent = 'Sesi kadaluarsa.'; }
+            }, 1000);
+        }
+
+        function startPolling(token, amount, note) {
+            clearInterval(pollingInterval);
+            var statusUrl = @json(url('pin')) + '/' + token + '/status';
+
+            pollingInterval = setInterval(function() {
+                fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.status === 'verified') {
+                        clearInterval(pollingInterval);
+                        clearInterval(window._qrTimerInterval);
+
+                        document.getElementById('qrStatus').innerHTML =
+                            '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> PIN Terverifikasi!</span>';
+                        document.getElementById('qrSpinner').style.display = 'none';
+                        document.getElementById('qrPanel').querySelector('.card').classList.replace('border-warning', 'border-success');
+
+                        // Isi hidden fields lalu submit form otomatis
+                        document.getElementById('withdrawAmount').value     = amount;
+                        document.getElementById('withdrawNoteHidden').value = note;
+                        document.getElementById('pinSessionToken').value    = token;
+
+                        setTimeout(function() {
+                            document.getElementById('withdrawForm').submit();
+                        }, 1200);
+
+                    } else if (data.status === 'expired') {
+                        clearInterval(pollingInterval);
+                        document.getElementById('qrStatus').innerHTML =
+                            '<span class="text-danger">Sesi kadaluarsa. Ulangi proses.</span>';
+                        document.getElementById('qrSpinner').style.display = 'none';
+                        requestPinButton.disabled = false;
+                        requestPinButton.innerHTML = '<i class="bi bi-phone"></i> Minta PIN via HP Nasabah';
+                    }
+                })
+                .catch(function() {});
+            }, 2000);
         }
     });
 </script>
