@@ -154,8 +154,16 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Nominal Setoran (Rp)</label>
-                        <input type="number" class="form-control form-control-lg" name="amount" min="1" required>
+                        <input type="text" class="form-control form-control-lg amount-display" id="depositDisplay"
+                               inputmode="numeric" placeholder="0" autocomplete="off">
+                        <input type="hidden" name="amount" id="depositAmount">
                         <div class="form-text">Pastikan uang fisik telah dihitung dan sesuai.</div>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="depositDisplay" data-amount="10000">+10.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="depositDisplay" data-amount="20000">+20.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="depositDisplay" data-amount="50000">+50.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="depositDisplay" data-amount="100000">+100.000</button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="depositNote">Catatan</label>
@@ -186,8 +194,16 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Nominal Penarikan (Rp)</label>
-                        <input type="number" class="form-control form-control-lg" name="amount" min="1" required>
+                        <input type="text" class="form-control form-control-lg amount-display" id="withdrawDisplay"
+                               inputmode="numeric" placeholder="0" autocomplete="off">
+                        <input type="hidden" name="amount" id="withdrawAmount">
                         <div class="form-text text-danger">Saldo minimum mengendap: Rp 10.000</div>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="10000">+10.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="20000">+20.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="50000">+50.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="100000">+100.000</button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">PIN Nasabah (Otorisasi)</label>
@@ -227,13 +243,63 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Format angka dengan pemisah ribuan (gaya Indonesia: titik) ──
+        function parseAmount(str) {
+            // Hapus semua karakter non-digit
+            return parseInt((str || '').replace(/\D/g, ''), 10) || 0;
+        }
+
+        function formatRupiah(val) {
+            if (!val) return '';
+            return val.toLocaleString('id-ID');
+        }
+
+        // ── Pasang event untuk setiap input display amount ──
+        document.querySelectorAll('.amount-display').forEach(function (displayInput) {
+            var hiddenId = displayInput.id === 'depositDisplay' ? 'depositAmount' : 'withdrawAmount';
+            var hiddenInput = document.getElementById(hiddenId);
+
+            displayInput.addEventListener('input', function () {
+                var raw = parseAmount(this.value);
+                this.value = raw ? formatRupiah(raw) : '';
+                if (hiddenInput) hiddenInput.value = raw || '';
+            });
+
+            displayInput.addEventListener('keydown', function (e) {
+                // Izinkan: Backspace, Delete, Tab, Escape, Enter, arrows, home, end
+                var allowed = [8, 9, 13, 27, 35, 36, 37, 38, 39, 40, 46];
+                if (allowed.indexOf(e.keyCode) !== -1) return;
+                // Blokir non-digit
+                if (e.key && !/^\d$/.test(e.key)) e.preventDefault();
+            });
+        });
+
+        // ── Tombol nominal cepat ──
+        document.querySelectorAll('.quick-amount').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var targetId = this.getAttribute('data-target');
+                var addAmount = parseInt(this.getAttribute('data-amount'), 10);
+                var displayInput = document.getElementById(targetId);
+                if (!displayInput) return;
+
+                var hiddenId = targetId === 'depositDisplay' ? 'depositAmount' : 'withdrawAmount';
+                var hiddenInput = document.getElementById(hiddenId);
+
+                var current = parseAmount(displayInput.value);
+                var newVal = current + addAmount;
+                displayInput.value = formatRupiah(newVal);
+                if (hiddenInput) hiddenInput.value = newVal;
+            });
+        });
+
+        // ── Konfirmasi Setoran ──
         var depositButton = document.getElementById('depositConfirmButton');
         var withdrawButton = document.getElementById('withdrawConfirmButton');
 
         if (depositButton) {
             depositButton.addEventListener('click', function () {
-                var amountInput = document.querySelector('#depositForm input[name="amount"]');
-                var amount = amountInput ? parseInt(amountInput.value, 10) : 0;
+                var amount = parseInt(document.getElementById('depositAmount').value || '0', 10);
 
                 if (!amount || amount <= 0) {
                     Swal.fire({
@@ -261,12 +327,12 @@
             });
         }
 
+        // ── Konfirmasi Penarikan ──
         if (withdrawButton) {
             withdrawButton.addEventListener('click', function () {
                 var withdrawForm = withdrawButton.closest('form');
-                var amountInput = withdrawForm.querySelector('input[name="amount"]');
                 var pinInput = withdrawForm.querySelector('input[name="pin"]');
-                var amount = amountInput ? parseInt(amountInput.value, 10) : 0;
+                var amount = parseInt(document.getElementById('withdrawAmount').value || '0', 10);
                 var pin = pinInput ? pinInput.value : '';
 
                 if (!amount || amount <= 0) {

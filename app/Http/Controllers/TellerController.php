@@ -229,8 +229,10 @@ class TellerController extends Controller
 
     public function processDeposit(Request $request, $customer_id)
     {
+        $request->merge(['amount' => (int) preg_replace('/\D/', '', $request->input('amount', ''))]);
+
         $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|integer|min:1',
             'note' => 'nullable|string|max:500',
         ]);
 
@@ -312,16 +314,18 @@ class TellerController extends Controller
 
     public function processWithdrawal(Request $request, $customer_id)
     {
+        $request->merge(['amount' => (int) preg_replace('/\D/', '', $request->input('amount', ''))]);
+
         $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|integer|min:1',
             'pin' => 'required|digits:6',
             'note' => 'nullable|string|max:500',
         ], [
             'amount.required' => 'Nominal penarikan wajib diisi.',
-            'amount.numeric' => 'Nominal penarikan harus berupa angka.',
-            'amount.min' => 'Nominal penarikan harus lebih dari 0.',
-            'pin.required' => 'PIN wajib diisi.',
-            'pin.digits' => 'PIN harus terdiri dari 6 angka.',
+            'amount.integer'  => 'Nominal penarikan harus berupa angka.',
+            'amount.min'      => 'Nominal penarikan harus lebih dari 0.',
+            'pin.required'    => 'PIN wajib diisi.',
+            'pin.digits'      => 'PIN harus terdiri dari 6 angka.',
         ]);
 
         $report = $this->todayReport();
