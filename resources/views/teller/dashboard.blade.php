@@ -98,7 +98,18 @@
                 <button class="btn btn-success">Ajukan Laporan</button>
             </form>
             @else
-            <p class="mb-0 text-muted">Laporan hari ini {{ $dailyReport->status === 'pending' ? 'sedang pending' : 'sudah ' . $dailyReport->status }}.</p>
+            <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+                <div>
+                    <strong>Laporan kas hari ini berstatus: {{ strtoupper($dailyReport->status) }}.</strong>
+                    <div class="small text-muted">Kas terkunci untuk transaksi baru. Anda dapat membukanya kembali ke status Draft jika ingin lanjut bertransaksi.</div>
+                </div>
+                <form method="POST" action="{{ route('teller.daily_report.reopen') }}" onsubmit="return confirm('Buka kembali kas hari ini ke status Draft agar bisa melakukan transaksi lagi?')">
+                    @csrf
+                    <button class="btn btn-sm btn-primary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Buka Kas Kembali (Draft)
+                    </button>
+                </form>
+            </div>
             @endif
         </div></div>
     </div>

@@ -152,6 +152,23 @@ class TellerController extends Controller
     }
 
     /**
+     * Buka kembali laporan kas harian ke status DRAFT (batalkan pengajuan).
+     * Memungkinkan teller melanjutkan transaksi nasabah kembali.
+     */
+    public function reopenDailyReport()
+    {
+        $report = $this->dailyReportService->todayReport();
+
+        $report->status         = 'draft';
+        $report->physical_cash  = 0;
+        $report->reviewed_by    = null;
+        $report->rejection_note = null;
+        $report->save();
+
+        return back()->with('success', 'Kas harian berhasil dibuka kembali ke status DRAFT. Anda sekarang dapat melanjutkan transaksi!');
+    }
+
+    /**
      * Tampilkan formulir transaksi setoran dan penarikan nasabah.
      */
     public function showTransaction(Customer $customer)

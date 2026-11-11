@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:teller'])->group(function () {
     Route::post('/teller/initial-capital', [\App\Http\Controllers\TellerController::class, 'addInitialCapital'])->name('teller.initial_capital');
     Route::post('/teller/additional-capital', [\App\Http\Controllers\TellerController::class, 'addAdditionalCapital'])->name('teller.additional_capital');
     Route::post('/teller/daily-report/submit', [\App\Http\Controllers\TellerController::class, 'submitDailyReport'])->name('teller.daily_report.submit');
+    Route::post('/teller/daily-report/reopen', [\App\Http\Controllers\TellerController::class, 'reopenDailyReport'])->name('teller.daily_report.reopen');
     Route::get('/teller/transaction/{customer}', [\App\Http\Controllers\TellerController::class, 'showTransaction'])->name('teller.transaction');
     Route::get('/teller/customer/{customer}/pin-recovery', [AuthController::class, 'showPinRecoveryForm'])->name('teller.pin_recovery');
     Route::post('/teller/customer/{customer}/pin-recovery/otp', [AuthController::class, 'requestPinRecoveryOtp'])->middleware('throttle:5,1')->name('teller.pin_recovery.otp');

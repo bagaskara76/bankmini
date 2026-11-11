@@ -62,3 +62,4 @@ class MonthlyReportService
         return compact('month', 'year', 'summary', 'tellerSummaries', 'dailyReports', 'transactionDetails');
     }
 }
+
