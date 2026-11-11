@@ -114,3 +114,4 @@ class PinSessionController extends Controller
         ]);
     }
 }
+

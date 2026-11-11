@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\DailyReport;
 use App\Models\PinSession;
 use App\Models\Transaction;
-use App\Models\AccountingJournal;
-use App\Models\DailyReport;
-use Illuminate\Support\Facades\DB;
+use App\Services\BankingTransactionService;
+use App\Services\DailyReportService;
+use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -16,11 +17,19 @@ use Illuminate\Validation\Rules\Password;
 
 class TellerController extends Controller
 {
+    public function __construct(
+        protected DailyReportService $dailyReportService,
+        protected BankingTransactionService $transactionService
+    ) {}
+
+    /**
+     * Dashboard operasional kas harian teller.
+     */
     public function dashboard()
     {
         $today = now()->toDateString();
-        $dailyReport = $this->todayReport();
-        $this->refreshSystemCash($dailyReport);
+        $dailyReport = $this->dailyReportService->todayReport();
+        $this->dailyReportService->refreshSystemCash($dailyReport);
 
         $totalDeposit = (int) Transaction::whereDate('created_at', $today)
             ->where('type', 'deposit')
@@ -48,13 +57,23 @@ class TellerController extends Controller
             ->latest()
             ->get();
 
-        return view('teller.dashboard', compact('totalDeposit', 'countDeposit', 'totalWithdrawal', 'countWithdrawal', 'dailyReport', 'transactions'));
+        return view('teller.dashboard', compact(
+            'totalDeposit',
+            'countDeposit',
+            'totalWithdrawal',
+            'countWithdrawal',
+            'dailyReport',
+            'transactions'
+        ));
     }
 
+    /**
+     * Catat modal awal fisik teller pada awal jam operasional.
+     */
     public function addInitialCapital(Request $request)
     {
         $validated = $request->validate(['initial_capital' => 'required|integer|min:0']);
-        $report = $this->todayReport();
+        $report = $this->dailyReportService->todayReport();
 
         if ($report->status !== 'draft') {
             return back()->with('error', 'Laporan yang sudah diajukan tidak dapat diubah.');
@@ -65,22 +84,25 @@ class TellerController extends Controller
         }
 
         $report->initial_capital = $validated['initial_capital'];
-        $this->refreshSystemCash($report);
+        $this->dailyReportService->refreshSystemCash($report);
 
         return back()->with('success', 'Modal awal berhasil dicatat.');
     }
 
+    /**
+     * Catat penambahan modal kas di tengah operasional berjalan.
+     */
     public function addAdditionalCapital(Request $request)
     {
         $validated = $request->validate([
             'amount' => 'required|integer|min:1',
         ], [
             'amount.required' => 'Nominal modal tambahan wajib diisi.',
-            'amount.integer' => 'Nominal modal tambahan harus berupa bilangan bulat.',
-            'amount.min' => 'Nominal modal tambahan harus lebih dari 0.',
+            'amount.integer'  => 'Nominal modal tambahan harus berupa bilangan bulat.',
+            'amount.min'      => 'Nominal modal tambahan harus lebih dari 0.',
         ]);
 
-        $report = $this->todayReport();
+        $report = $this->dailyReportService->todayReport();
 
         if ($report->status !== 'draft') {
             return back()->with('error', 'Modal tambahan tidak dapat dicatat karena laporan harian sudah diajukan.');
@@ -90,35 +112,23 @@ class TellerController extends Controller
             return back()->with('error', 'Catat modal awal hari ini sebelum menambahkan modal.');
         }
 
-        $added = DB::transaction(function () use ($validated) {
-            $today = now()->toDateString();
-            $report = DailyReport::query()
-                ->whereDate('report_date', $today)
-                ->lockForUpdate()
-                ->firstOrFail();
+        $added = $this->dailyReportService->addAdditionalCapital($validated['amount']);
 
-            if ($report->status !== 'draft' || $report->initial_capital <= 0) {
-                return false;
-            }
-
-            $report->additional_capital += $validated['amount'];
-            $this->refreshSystemCash($report);
-
-            return true;
-        });
-
-        if (!$added) {
+        if (! $added) {
             return back()->with('error', 'Laporan harian tidak lagi dapat menerima modal tambahan.');
         }
 
         return back()->with('success', 'Modal tambahan berhasil dicatat ke kas harian.');
     }
 
+    /**
+     * Kirim laporan kas harian ke admin untuk verifikasi.
+     */
     public function submitDailyReport(Request $request)
     {
-        $report = $this->todayReport();
+        $report = $this->dailyReportService->todayReport();
 
-        if (!in_array($report->status, ['draft', 'rejected'], true)) {
+        if (! in_array($report->status, ['draft', 'rejected'], true)) {
             return back()->with('error', 'Laporan ini sudah diajukan atau diproses.');
         }
 
@@ -126,69 +136,27 @@ class TellerController extends Controller
             'physical_cash' => 'required|integer|min:0',
         ], [
             'physical_cash.required' => 'Kas fisik hasil penghitungan wajib diisi.',
-            'physical_cash.integer' => 'Kas fisik harus berupa bilangan bulat.',
-            'physical_cash.min' => 'Kas fisik tidak boleh kurang dari 0.',
+            'physical_cash.integer'  => 'Kas fisik harus berupa bilangan bulat.',
+            'physical_cash.min'      => 'Kas fisik tidak boleh kurang dari 0.',
         ]);
 
-        $this->refreshSystemCash($report);
-        $report->teller_id = Auth::id();
-        $report->physical_cash = $validated['physical_cash'];
-        $report->status = 'pending';
-        $report->reviewed_by = null;
+        $this->dailyReportService->refreshSystemCash($report);
+        $report->teller_id      = Auth::id();
+        $report->physical_cash  = $validated['physical_cash'];
+        $report->status         = 'pending';
+        $report->reviewed_by    = null;
         $report->rejection_note = null;
         $report->save();
 
         return back()->with('success', 'Laporan harian berhasil dikirim ulang untuk diperiksa admin.');
     }
 
-    private function todayReport(): DailyReport
-    {
-        $today = now()->toDateString();
-        $report = DailyReport::whereDate('report_date', $today)->first();
-
-        if (!$report) {
-            $report = DailyReport::create([
-                'teller_id' => Auth::id(),
-                'report_date' => $today,
-                'status' => 'draft',
-                'initial_capital' => 0,
-                'additional_capital' => 0,
-                'total_deposit' => 0,
-                'total_withdrawal' => 0,
-                'system_cash' => 0,
-                'physical_cash' => 0,
-            ]);
-        }
-
-        return $report;
-    }
-
-    private function refreshSystemCash(DailyReport $report): void
-    {
-        $date = $report->getRawOriginal('report_date') ?? $report->report_date->toDateString();
-
-        $totalDeposit = (int) Transaction::whereDate('created_at', $date)
-            ->where('type', 'deposit')
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $totalWithdrawal = (int) Transaction::whereDate('created_at', $date)
-            ->where('type', 'withdrawal')
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $report->total_deposit = $totalDeposit;
-        $report->total_withdrawal = $totalWithdrawal;
-        $report->system_cash = (int) $report->initial_capital
-            + (int) $report->additional_capital
-            + $totalDeposit
-            - $totalWithdrawal;
-        $report->save();
-    }
-
+    /**
+     * Tampilkan formulir transaksi setoran dan penarikan nasabah.
+     */
     public function showTransaction(Customer $customer)
     {
-        $dailyReport = $this->todayReport();
+        $dailyReport = $this->dailyReportService->todayReport();
         $receiptTransaction = null;
         $receiptTransactionId = session('receiptTransactionId');
 
@@ -202,110 +170,71 @@ class TellerController extends Controller
         return view('teller.transaction', compact('customer', 'dailyReport', 'receiptTransaction'));
     }
 
+    /**
+     * Cari nasabah berdasarkan QR Code atau Nomor Rekening.
+     */
     public function searchCustomer(Request $request)
     {
-        $qr_code = $request->input('qr_code');
-        $account_number = $request->input('account_number');
+        $qrCode        = $request->input('qr_code');
+        $accountNumber = $request->input('account_number');
 
         $customer = Customer::with('user');
 
-        if ($qr_code) {
-            $customer = $customer->where('qr_code_string', $qr_code);
-        } elseif ($account_number) {
-            $customer = $customer->where('account_number', $account_number);
+        if ($qrCode) {
+            $customer = $customer->where('qr_code_string', $qrCode);
+        } elseif ($accountNumber) {
+            $customer = $customer->where('account_number', $accountNumber);
         } else {
             return back()->with('error', 'Masukkan QR Code atau Nomor Rekening');
         }
 
         $customer = $customer->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return back()->with('error', 'Nasabah tidak ditemukan');
         }
 
-        $dailyReport = $this->todayReport();
+        $dailyReport = $this->dailyReportService->todayReport();
 
         return view('teller.transaction', compact('customer', 'dailyReport'));
     }
 
+    /**
+     * Proses transaksi setoran tunai nasabah.
+     */
     public function processDeposit(Request $request, $customer_id)
     {
-        $request->merge(['amount' => (int) preg_replace('/\D/', '', $request->input('amount', ''))]);
+        $amount = $this->sanitizeAmount($request->input('amount'));
+        $request->merge(['amount' => $amount]);
 
         $request->validate([
             'amount' => 'required|integer|min:1',
-            'note' => 'nullable|string|max:500',
+            'note'   => 'nullable|string|max:500',
         ]);
 
-        if ($this->todayReport()->status !== 'draft') {
+        if ($this->dailyReportService->todayReport()->status !== 'draft') {
             return back()->with('error', 'Transaksi baru tidak dapat diproses karena laporan harian sudah diajukan.');
         }
 
         $customer = Customer::findOrFail($customer_id);
-        $amount = $request->amount;
-        $note = $request->input('note');
+        $note     = $request->input('note');
 
         try {
-            $transaction = DB::transaction(function () use ($customer, $amount, $note) {
-                // Update Balance
-                $customer->balance += $amount;
-                $customer->save();
-
-                // Create Transaction
-                $trx = Transaction::create([
-                    'customer_id' => $customer->id,
-                    'teller_id' => Auth::id(),
-                    'type' => 'deposit',
-                    'amount' => $amount,
-                    'note' => $note,
-                    'status' => 'completed'
-                ]);
-
-                // Double Entry Journal (101 Kas, 201 Tabungan)
-                // Setoran: Kas Bertambah (Debit), Tabungan Bertambah (Kredit)
-                AccountingJournal::create([
-                    'transaction_id' => $trx->id,
-                    'account_code' => '101', // Kas
-                    'type' => 'debit',
-                    'amount' => $amount
-                ]);
-
-                AccountingJournal::create([
-                    'transaction_id' => $trx->id,
-                    'account_code' => '201', // Tabungan
-                    'type' => 'credit',
-                    'amount' => $amount
-                ]);
-
-                $today = now()->toDateString();
-                $report = DailyReport::whereDate('report_date', $today)->lockForUpdate()->first();
-                if (!$report) {
-                    $report = DailyReport::create([
-                        'teller_id' => Auth::id(),
-                        'report_date' => $today,
-                        'status' => 'draft',
-                        'initial_capital' => 0,
-                        'additional_capital' => 0,
-                        'total_deposit' => 0,
-                        'total_withdrawal' => 0,
-                        'system_cash' => 0,
-                        'physical_cash' => 0,
-                    ]);
-                }
-
-                $this->refreshSystemCash($report);
-
-                return $trx;
-            });
+            $transaction = $this->transactionService->processDeposit(
+                $customer,
+                $amount,
+                $note,
+                Auth::id()
+            );
 
             return redirect()->route('teller.transaction', $customer->id)
                 ->with('success', 'Setoran tunai berhasil. Saldo saat ini: Rp ' . number_format($customer->balance, 0, ',', '.'))
                 ->with('receiptTransactionId', $transaction->id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Gagal memproses setoran.', [
                 'customer_id' => $customer->id,
-                'teller_id' => Auth::id(),
-                'exception' => $e->getMessage(),
+                'teller_id'   => Auth::id(),
+                'exception'   => $e->getMessage(),
             ]);
 
             return redirect()->route('teller.transaction', $customer->id)
@@ -313,14 +242,18 @@ class TellerController extends Controller
         }
     }
 
+    /**
+     * Proses transaksi penarikan tunai nasabah dengan otorisasi PIN Mobile.
+     */
     public function processWithdrawal(Request $request, $customer_id)
     {
-        $request->merge(['amount' => (int) preg_replace('/\D/', '', $request->input('amount', ''))]);
+        $amount = $this->sanitizeAmount($request->input('amount'));
+        $request->merge(['amount' => $amount]);
 
         $request->validate([
-            'amount'          => 'required|integer|min:1',
+            'amount'            => 'required|integer|min:1',
             'pin_session_token' => 'required|string',
-            'note'            => 'nullable|string|max:500',
+            'note'              => 'nullable|string|max:500',
         ], [
             'amount.required'            => 'Nominal penarikan wajib diisi.',
             'amount.integer'             => 'Nominal penarikan harus berupa angka.',
@@ -328,7 +261,7 @@ class TellerController extends Controller
             'pin_session_token.required' => 'Verifikasi PIN nasabah diperlukan.',
         ]);
 
-        $report = $this->todayReport();
+        $report = $this->dailyReportService->todayReport();
 
         if ($report->status !== 'draft') {
             return back()->with('error', 'Transaksi baru tidak dapat diproses karena laporan harian sudah diajukan.');
@@ -349,69 +282,33 @@ class TellerController extends Controller
             return back()->with('error', 'Sesi verifikasi PIN tidak valid atau sudah kadaluarsa. Ulangi proses verifikasi PIN.');
         }
 
-        // Validasi amount harus sama dengan yang ada di pin session (cegah tampering)
-        if ((int) $pinSession->amount !== (int) $request->amount) {
+        // Validasi kesesuaian nominal dengan sesi PIN
+        if ((int) $pinSession->amount !== $amount) {
             return back()->with('error', 'Nominal penarikan tidak sesuai dengan yang telah diverifikasi. Ulangi proses.');
         }
 
         $customer = Customer::findOrFail($customer_id);
-        $amount   = $request->amount;
         $note     = $request->input('note', $pinSession->note);
 
-        // Validate the required minimum balance retained in the account.
+        // Validasi saldo minimum mengendap
         if (($customer->balance - $amount) < Customer::MINIMUM_BALANCE) {
             return redirect()->route('teller.transaction', $customer->id)
                 ->with('error', 'Maaf, saldo tidak mencukupi.');
         }
 
         try {
-            $transaction = DB::transaction(function () use ($customer, $amount, $note, $pinSession) {
-                // Update Balance
-                $customer->balance -= $amount;
-                $customer->save();
-
-                // Create Transaction
-                $trx = Transaction::create([
-                    'customer_id' => $customer->id,
-                    'teller_id'   => Auth::id(),
-                    'type'        => 'withdrawal',
-                    'amount'      => $amount,
-                    'note'        => $note,
-                    'status'      => 'completed',
-                ]);
-
-                // Double Entry Journal (101 Kas, 201 Tabungan)
-                AccountingJournal::create(['transaction_id' => $trx->id, 'account_code' => '201', 'type' => 'debit',  'amount' => $amount]);
-                AccountingJournal::create(['transaction_id' => $trx->id, 'account_code' => '101', 'type' => 'credit', 'amount' => $amount]);
-
-                // Refresh daily report
-                $today  = now()->toDateString();
-                $report = DailyReport::whereDate('report_date', $today)->lockForUpdate()->first();
-                if (! $report) {
-                    $report = DailyReport::create([
-                        'teller_id'          => Auth::id(),
-                        'report_date'        => $today,
-                        'status'             => 'draft',
-                        'initial_capital'    => 0,
-                        'additional_capital' => 0,
-                        'total_deposit'      => 0,
-                        'total_withdrawal'   => 0,
-                        'system_cash'        => 0,
-                        'physical_cash'      => 0,
-                    ]);
-                }
-                $this->refreshSystemCash($report);
-
-                // Invalidasi pin session setelah digunakan
-                $pinSession->update(['status' => 'expired']);
-
-                return $trx;
-            });
+            $transaction = $this->transactionService->processWithdrawal(
+                $customer,
+                $amount,
+                $note,
+                Auth::id(),
+                $pinSession
+            );
 
             return redirect()->route('teller.transaction', $customer->id)
                 ->with('success', 'Penarikan tunai berhasil. Sisa Saldo: Rp ' . number_format($customer->balance, 0, ',', '.'))
                 ->with('receiptTransactionId', $transaction->id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Gagal memproses penarikan.', [
                 'customer_id' => $customer->id,
                 'teller_id'   => Auth::id(),
@@ -423,24 +320,30 @@ class TellerController extends Controller
         }
     }
 
+    /**
+     * Formulir ganti password akun teller.
+     */
     public function showChangePassword()
     {
         return view('teller.change_password');
     }
 
+    /**
+     * Simpan password baru akun teller.
+     */
     public function updatePassword(Request $request)
     {
         $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
+            'password'         => ['required', 'string', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
         ], [
             'current_password.required' => 'Password saat ini wajib diisi.',
-            'password.required' => 'Password baru wajib diisi.',
-            'password.min' => 'Password baru minimal 12 karakter.',
-            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
-            'password.numbers' => 'Password harus mengandung minimal satu angka.',
-            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
-            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.required'         => 'Password baru wajib diisi.',
+            'password.min'              => 'Password baru minimal 12 karakter.',
+            'password.mixed_case'       => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers'          => 'Password harus mengandung minimal satu angka.',
+            'password.symbols'          => 'Password harus mengandung minimal satu karakter spesial.',
+            'password.confirmed'        => 'Konfirmasi password baru tidak cocok.',
         ]);
 
         /** @var \App\Models\User $user */
@@ -454,10 +357,38 @@ class TellerController extends Controller
             return back()->withErrors(['password' => 'Password baru tidak boleh sama dengan password lama.']);
         }
 
-        $user->password = Hash::make($request->password);
+        $user->password       = Hash::make($request->password);
         $user->plain_password = $request->password;
         $user->save();
 
         return back()->with('success', 'Password berhasil diperbarui.');
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Helper Methods Privat
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Konversi string nominal yang memiliki format titik/koma menjadi angka integer bersih.
+     */
+    private function sanitizeAmount(mixed $amount): int
+    {
+        return (int) preg_replace('/\D/', '', (string) $amount);
+    }
+
+    /**
+     * Kompatibilitas mundur untuk pemanggilan internal todayReport.
+     */
+    private function todayReport(): DailyReport
+    {
+        return $this->dailyReportService->todayReport();
+    }
+
+    /**
+     * Kompatibilitas mundur untuk pemanggilan internal refreshSystemCash.
+     */
+    private function refreshSystemCash(DailyReport $report): void
+    {
+        $this->dailyReportService->refreshSystemCash($report);
     }
 }

@@ -36,3 +36,4 @@ class PinSession extends Model
         return $this->expires_at->isPast();
     }
 }
+
