@@ -145,5 +145,18 @@
             </div>
         </div>
     </section>
+
+    <section class="admin-dashboard__section" aria-labelledby="admin-settings-title">
+        <h2 class="admin-dashboard__section-title" id="admin-settings-title">Pengaturan Akun</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
+            <div class="col">
+                <article class="card admin-menu-card">
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-key admin-menu-card__icon"></i><span>Ganti Password</span></h3>
+                    <p class="admin-menu-card__description">Perbarui kata sandi akun Administrator Anda demi menjaga keamanan sistem.</p>
+                    <a href="{{ route('admin.change_password') }}" class="stretched-link" aria-label="Buka Ganti Password"></a>
+                </article>
+            </div>
+        </div>
+    </section>
 </div>
 @endsection
