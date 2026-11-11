@@ -67,4 +67,15 @@ class Customer extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    /**
+     * Cek apakah nasabah memenuhi syarat untuk dihapus:
+     * - Saldo sudah tidak melebihi saldo minimum (<= Rp 10.000)
+     * - Tidak memiliki riwayat transaksi perbankan
+     */
+    public function canBeDeleted(): bool
+    {
+        return $this->balance <= self::MINIMUM_BALANCE
+            && ! $this->transactions()->exists();
+    }
 }

@@ -111,11 +111,7 @@
                                         </form>
                                     @endif
 
-                                    @php
-                                        $canDelete = $customer->balance <= \App\Models\Customer::MINIMUM_BALANCE
-                                                     && !$customer->transactions()->exists();
-                                    @endphp
-                                    @if($canDelete)
+                                    @if($customer->canBeDeleted())
                                     <form method="POST" action="{{ route('admin.customers.delete', $customer->id) }}"
                                           class="d-inline"
                                           onsubmit="return confirm('Hapus nasabah {{ addslashes($user?->name ?? '') }}? Histori transaksi tetap tersimpan.')">
