@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\PinSession;
 use App\Models\RecoveryOtp;
 use App\Models\Transaction;
 use App\Models\User;
@@ -479,6 +480,72 @@ class MobileCustomerController extends Controller
         }
 
         return response()->json(['message' => 'PIN transaksi berhasil diubah.']);
+    }
+
+    /**
+     * Dapatkan sesi PIN penarikan yang sedang menunggu otorisasi nasabah.
+     */
+    public function pendingPinSession(Request $request): JsonResponse
+    {
+        $customer = $this->customerFor($request->user());
+        $session = PinSession::with('teller')
+            ->where('customer_id', $customer->id)
+            ->where('status', 'waiting')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (! $session) {
+            return response()->json(['data' => null]);
+        }
+
+        return response()->json([
+            'data' => [
+                'token'       => $session->token,
+                'amount'      => (int) $session->amount,
+                'teller_name' => $session->teller?->name ?? 'Teller',
+                'note'        => $session->note,
+                'expires_at'  => $session->expires_at->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Otorisasi/verifikasi PIN penarikan langsung dari aplikasi mobile.
+     */
+    public function verifyPinSession(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'pin'   => ['required', 'digits:6'],
+        ], [
+            'token.required' => 'Token sesi otorisasi diperlukan.',
+            'pin.required'   => 'PIN wajib diisi.',
+            'pin.digits'     => 'PIN harus 6 digit angka.',
+        ]);
+
+        $customer = $this->customerFor($request->user());
+        $session  = PinSession::where('token', $validated['token'])
+            ->where('customer_id', $customer->id)
+            ->first();
+
+        if (! $session || $session->isExpired() || $session->status !== 'waiting') {
+            return response()->json([
+                'message' => 'Sesi penarikan ini sudah tidak valid atau kadaluarsa. Minta teller mengulangi proses.',
+            ], 422);
+        }
+
+        if (! Hash::check($validated['pin'], $customer->pin)) {
+            return response()->json([
+                'message' => 'PIN yang Anda masukkan salah. Silakan coba lagi.',
+            ], 422);
+        }
+
+        $session->update(['status' => 'verified']);
+
+        return response()->json([
+            'message' => 'PIN berhasil diverifikasi! Transaksi penarikan sedang diproses oleh teller.',
+        ]);
     }
 
     public function logout(Request $request): JsonResponse

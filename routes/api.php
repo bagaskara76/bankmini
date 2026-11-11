@@ -42,5 +42,10 @@ Route::prefix('mobile')->group(function () {
             ->middleware('throttle:5,1');
         Route::post('/pin/change', [MobileCustomerController::class, 'changePin'])
             ->middleware('throttle:5,1');
+
+        // Otorisasi PIN Penarikan di aplikasi mobile
+        Route::get('/pin/pending-session', [MobileCustomerController::class, 'pendingPinSession']);
+        Route::post('/pin/verify-session', [MobileCustomerController::class, 'verifyPinSession'])
+            ->middleware('throttle:10,1');
     });
 });
