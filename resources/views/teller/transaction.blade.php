@@ -203,10 +203,10 @@
                                inputmode="numeric" placeholder="0" autocomplete="off">
                         <div class="form-text text-danger">Saldo minimum mengendap: Rp 10.000</div>
                         <div class="d-flex flex-wrap gap-2 mt-2">
-                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="10000">+10.000</button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="20000">+20.000</button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="50000">+50.000</button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="100000">+100.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="10000">-10.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="20000">-20.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="50000">-50.000</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm quick-amount" data-target="withdrawDisplay" data-amount="100000">-100.000</button>
                         </div>
                     </div>
                     <div class="mb-3">
