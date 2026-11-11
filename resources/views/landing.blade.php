@@ -416,7 +416,7 @@
                                 <li>Datang ke meja loket Teller Bank Mini sekolah pada jam operasional.</li>
                                 <li>Tunjukkan <strong>QR Code Kartu Nasabah</strong> dari aplikasi mobile atau sebutkan nomor rekening.</li>
                                 <li><strong>Setoran:</strong> Serahkan uang tunai ke teller untuk dihitung dan dicatat ke saldo tabungan.</li>
-                                <li><strong>Penarikan:</strong> Tentukan nominal penarikan. Demi privasi, teller tidak melihat PIN Anda. Buka <strong>Aplikasi Mobile Android</strong> atau scan QR Code di meja teller menggunakan HP, lalu masukkan <strong>PIN 6 Digit</strong> Anda sendiri untuk otorisasi penarikan.</li>
+                                <li><strong>Penarikan:</strong> Tentukan nominal penarikan. Demi privasi, teller tidak melihat PIN Anda. Cukup buka <strong>Aplikasi Mobile Android</strong> di HP Anda, lalu masukkan <strong>PIN 6 Digit</strong> Anda sendiri untuk otorisasi penarikan.</li>
                                 <li>Terima lembar struk bukti transaksi dari teller dan pastikan saldo Anda telah terupdate.</li>
                             </ol>
                         </article>
@@ -469,7 +469,7 @@
                             <ol class="manual-steps-list">
                                 <li><strong>Cari Nasabah:</strong> Scan kartu QR nasabah dengan webcam/kamera, atau ketik nomor rekening pada kolom pencarian.</li>
                                 <li><strong>Setoran:</strong> Masukkan jumlah nominal setoran, hitung uang fisik nasabah, lalu klik <em>"Proses Setoran"</em>.</li>
-                                <li><strong>Penarikan:</strong> Masukkan jumlah penarikan, lalu klik tombol <em>"Minta PIN via HP Nasabah"</em>. Layar akan memunculkan QR Code otorisasi agar nasabah dapat memasukkan <strong>PIN 6 Digit secara mandiri melalui HP/aplikasi mobile</strong> demi privasi dan keamanan. Sistem teller akan otomatis memproses transaksi saat PIN terverifikasi.</li>
+                                <li><strong>Penarikan:</strong> Masukkan jumlah penarikan, lalu klik tombol <em>"Minta PIN via HP Nasabah"</em>. Layar teller akan menunggu nasabah memasukkan <strong>PIN 6 Digit secara mandiri melalui Aplikasi Mobile</strong> demi menjaga privasi dan keamanan. Sistem teller akan otomatis memproses transaksi begitu PIN terverifikasi.</li>
                                 <li>Cetak struk bukti transaksi untuk diserahkan kepada nasabah sebagai tanda bukti sah.</li>
                             </ol>
                         </article>

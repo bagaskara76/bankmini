@@ -234,21 +234,23 @@
                     </button>
                 </form>
 
-                {{-- Panel QR Code (muncul setelah klik tombol di atas) --}}
-                <div id="qrPanel" class="mt-3" style="display:none;">
-                    <div class="card border-warning">
+                {{-- Panel Menunggu Otorisasi PIN di Aplikasi Mobile --}}
+                <div id="pinWaitPanel" class="mt-3" style="display:none;">
+                    <div class="card border-primary shadow-sm">
                         <div class="card-body text-center py-3">
-                            <p class="small fw-semibold mb-2">
-                                <i class="bi bi-qr-code-scan me-1"></i>
-                                Arahkan HP nasabah ke QR ini untuk memasukkan PIN
-                            </p>
-                            <div id="qrCodeContainer" class="mb-2"></div>
-                            <p class="small text-muted mb-1" id="qrUrlText" style="word-break:break-all;font-size:11px;"></p>
-                            <div class="d-flex align-items-center justify-content-center gap-2">
-                                <div class="spinner-border spinner-border-sm text-warning" role="status" id="qrSpinner"></div>
-                                <span class="small text-muted" id="qrStatus">Menunggu nasabah memasukkan PIN…</span>
+                            <div class="mb-2">
+                                <span class="badge bg-primary px-3 py-2 fs-6">
+                                    <i class="bi bi-phone me-1"></i> Otorisasi di Aplikasi Mobile
+                                </span>
                             </div>
-                            <div class="mt-2 small" id="qrTimer"></div>
+                            <p class="small text-muted mb-2">
+                                Silakan minta nasabah membuka <strong>Aplikasi Mobile (HP)</strong> dan menekan tombol <strong>"Otorisasi PIN Penarikan"</strong>.
+                            </p>
+                            <div class="d-flex align-items-center justify-content-center gap-2 my-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status" id="pinSpinner"></div>
+                                <span class="small fw-semibold text-secondary" id="pinStatus">Menunggu konfirmasi PIN di HP nasabah…</span>
+                            </div>
+                            <div class="small" id="pinTimer"></div>
                         </div>
                     </div>
                 </div>
@@ -266,8 +268,6 @@
 @endsection
 
 @push('scripts')
-{{-- QR Code library (ringan, tidak perlu install npm) --}}
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -385,7 +385,7 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (!data.token) throw new Error('Token tidak diterima');
-                    showQrPanel(data.mobile_url, amount, data.expires_at);
+                    showWaitPanel(data.expires_at);
                     startPolling(data.token, amount, note);
                 })
                 .catch(function() {
@@ -396,30 +396,20 @@
             });
         }
 
-        function showQrPanel(url, amount, expiresAtIso) {
-            var panel = document.getElementById('qrPanel');
+        function showWaitPanel(expiresAtIso) {
+            var panel = document.getElementById('pinWaitPanel');
             panel.style.display = 'block';
-
-            // Generate QR Code ke canvas
-            var container = document.getElementById('qrCodeContainer');
-            container.innerHTML = '';
-            var canvas = document.createElement('canvas');
-            container.appendChild(canvas);
-            QRCode.toCanvas(canvas, url, { width: 160, margin: 1 }, function(err) {
-                if (err) container.innerHTML = '<p class="small text-danger">QR gagal dibuat</p>';
-            });
-            document.getElementById('qrUrlText').textContent = url;
 
             // Countdown timer
             var expiresAt = new Date(expiresAtIso);
-            clearInterval(window._qrTimerInterval);
-            window._qrTimerInterval = setInterval(function() {
+            clearInterval(window._pinTimerInterval);
+            window._pinTimerInterval = setInterval(function() {
                 var diff = Math.max(0, Math.floor((expiresAt - new Date()) / 1000));
                 var m = Math.floor(diff / 60), s = diff % 60;
-                var timerEl = document.getElementById('qrTimer');
+                var timerEl = document.getElementById('pinTimer');
                 timerEl.textContent = 'Sesi habis dalam: ' + m + ':' + (s < 10 ? '0' : '') + s;
                 timerEl.className = 'mt-2 small ' + (diff <= 60 ? 'text-danger fw-bold' : 'text-muted');
-                if (diff === 0) { clearInterval(window._qrTimerInterval); timerEl.textContent = 'Sesi kadaluarsa.'; }
+                if (diff === 0) { clearInterval(window._pinTimerInterval); timerEl.textContent = 'Sesi kadaluarsa.'; }
             }, 1000);
         }
 
@@ -433,12 +423,12 @@
                 .then(function(data) {
                     if (data.status === 'verified') {
                         clearInterval(pollingInterval);
-                        clearInterval(window._qrTimerInterval);
+                        clearInterval(window._pinTimerInterval);
 
-                        document.getElementById('qrStatus').innerHTML =
-                            '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> PIN Terverifikasi!</span>';
-                        document.getElementById('qrSpinner').style.display = 'none';
-                        document.getElementById('qrPanel').querySelector('.card').classList.replace('border-warning', 'border-success');
+                        document.getElementById('pinStatus').innerHTML =
+                            '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> PIN Terverifikasi di Aplikasi!</span>';
+                        document.getElementById('pinSpinner').style.display = 'none';
+                        document.getElementById('pinWaitPanel').querySelector('.card').classList.replace('border-primary', 'border-success');
 
                         // Isi hidden fields lalu submit form otomatis
                         document.getElementById('withdrawAmount').value     = amount;
@@ -451,9 +441,9 @@
 
                     } else if (data.status === 'expired') {
                         clearInterval(pollingInterval);
-                        document.getElementById('qrStatus').innerHTML =
+                        document.getElementById('pinStatus').innerHTML =
                             '<span class="text-danger">Sesi kadaluarsa. Ulangi proses.</span>';
-                        document.getElementById('qrSpinner').style.display = 'none';
+                        document.getElementById('pinSpinner').style.display = 'none';
                         requestPinButton.disabled = false;
                         requestPinButton.innerHTML = '<i class="bi bi-phone"></i> Minta PIN via HP Nasabah';
                     }
