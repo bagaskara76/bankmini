@@ -50,6 +50,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/reports/{report}/print', [\App\Http\Controllers\AdminController::class, 'printReport'])->name('admin.print_report');
     Route::get('/admin/dispute-resolution', [\App\Http\Controllers\AdminController::class, 'disputeResolution'])->name('admin.dispute_resolution');
     Route::get('/admin/transfer-approval', [\App\Http\Controllers\AdminController::class, 'transferApproval'])->name('admin.transfer_approval');
+    Route::get('/admin/change-password', [\App\Http\Controllers\AdminController::class, 'showChangePassword'])->name('admin.change_password');
+    Route::post('/admin/change-password', [\App\Http\Controllers\AdminController::class, 'updatePassword'])->name('admin.update_password');
 });
 
 // Teller Routes
@@ -65,6 +67,8 @@ Route::middleware(['auth', 'role:teller'])->group(function () {
     Route::post('/teller/search', [\App\Http\Controllers\TellerController::class, 'searchCustomer'])->name('teller.search');
     Route::post('/teller/deposit/{customer}', [\App\Http\Controllers\TellerController::class, 'processDeposit'])->name('teller.deposit');
     Route::post('/teller/withdraw/{customer}', [\App\Http\Controllers\TellerController::class, 'processWithdrawal'])->name('teller.withdraw');
+    Route::get('/teller/change-password', [\App\Http\Controllers\TellerController::class, 'showChangePassword'])->name('teller.change_password');
+    Route::post('/teller/change-password', [\App\Http\Controllers\TellerController::class, 'updatePassword'])->name('teller.update_password');
 });
 
 // Customer Routes

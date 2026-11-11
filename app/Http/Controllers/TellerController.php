@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 class TellerController extends Controller
 {
@@ -415,5 +416,43 @@ class TellerController extends Controller
             return redirect()->route('teller.transaction', $customer->id)
                 ->with('error', 'Penarikan gagal diproses. Saldo tidak berubah. Silakan periksa kembali dan ulangi.');
         }
+    }
+
+    public function showChangePassword()
+    {
+        return view('teller.change_password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 12 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.']);
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Password baru tidak boleh sama dengan password lama.']);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->plain_password = $request->password;
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 }

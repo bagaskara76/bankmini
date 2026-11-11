@@ -61,4 +61,13 @@
         </a>
     </div>
 
+    <div class="admin-sidebar__group">
+        <p class="admin-sidebar__title">Pengaturan Akun</p>
+        <a class="nav-link {{ request()->routeIs('admin.change_password') ? 'active' : '' }}"
+           href="{{ route('admin.change_password') }}"
+           @if(request()->routeIs('admin.change_password')) aria-current="page" @endif>
+            Ganti Password
+        </a>
+    </div>
+
 </nav>

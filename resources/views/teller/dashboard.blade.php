@@ -2,9 +2,16 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-12 mb-4">
-        <h4 class="fw-bold">Dashboard Teller</h4>
-        <p class="text-muted">Selamat bertugas, pastikan ketelitian dalam melayani transaksi nasabah.</p>
+    <div class="col-md-12 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1">Dashboard Teller</h4>
+            <p class="text-muted mb-0">Selamat bertugas, pastikan ketelitian dalam melayani transaksi nasabah.</p>
+        </div>
+        <div>
+            <a href="{{ route('teller.change_password') }}" class="btn btn-outline-primary">
+                Ganti Password
+            </a>
+        </div>
     </div>
 </div>
 
