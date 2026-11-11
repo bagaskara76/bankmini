@@ -25,6 +25,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Admin task routes
     Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('admin.users');
     Route::post('/admin/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('admin.users.store');
+    Route::put('/admin/users/{user}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::get('/admin/master-accounts', [\App\Http\Controllers\AdminController::class, 'masterAccounts'])->name('admin.master_accounts');
     Route::get('/admin/members', [\App\Http\Controllers\AdminController::class, 'members'])->name('admin.members.index');
     Route::post('/admin/members', [\App\Http\Controllers\AdminController::class, 'storeMember'])->name('admin.members.store');
@@ -35,6 +37,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/members/{pendingMember}/activate', [\App\Http\Controllers\AdminController::class, 'activateMember'])->name('admin.members.activate');
     Route::delete('/admin/members/{pendingMember}', [\App\Http\Controllers\AdminController::class, 'deletePendingMember'])->name('admin.members.delete');
     Route::post('/admin/customers/{customer}/email', [\App\Http\Controllers\AdminController::class, 'updateCustomerEmail'])->name('admin.customers.email');
+    Route::put('/admin/customers/{customer}', [\App\Http\Controllers\AdminController::class, 'updateCustomer'])->name('admin.customers.update');
     Route::post('/admin/customers/{customer}/block', [\App\Http\Controllers\AdminController::class, 'blockCustomer'])->name('admin.customers.block');
     Route::post('/admin/customers/{customer}/unblock', [\App\Http\Controllers\AdminController::class, 'unblockCustomer'])->name('admin.customers.unblock');
     Route::delete('/admin/customers/{customer}', [\App\Http\Controllers\AdminController::class, 'deleteCustomer'])->name('admin.customers.delete');

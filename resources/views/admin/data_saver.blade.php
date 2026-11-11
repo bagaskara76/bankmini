@@ -94,6 +94,11 @@
                                     @endif
                                 </td>
                                 <td class="text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ $customer->id }}">
+                                        Edit
+                                    </button>
+
                                     @if($user?->is_blocked)
                                         <form method="POST" action="{{ route('admin.customers.unblock', $customer->id) }}" class="d-inline">
                                             @csrf
@@ -115,6 +120,68 @@
                                     </form>
                                 </td>
                             </tr>
+
+                            <!-- Modal Edit Customer -->
+                            <div class="modal fade" id="editCustomerModal{{ $customer->id }}" tabindex="-1" aria-labelledby="editCustomerModalLabel{{ $customer->id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ route('admin.customers.update', $customer->id) }}">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fs-6 fw-bold" id="editCustomerModalLabel{{ $customer->id }}">Edit Data Nasabah: {{ $user?->name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Nama Lengkap</label>
+                                                    <input type="text" name="name" class="form-control" value="{{ old('name', $user?->name) }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Username</label>
+                                                    <input type="text" name="username" class="form-control" value="{{ old('username', $user?->username) }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Email OTP</label>
+                                                    <input type="email" name="email" class="form-control" value="{{ old('email', $user?->email) }}" placeholder="email@contoh.com">
+                                                </div>
+                                                <div class="row g-2 mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Tingkat Kelas</label>
+                                                        <select name="grade" class="form-select" required>
+                                                            <option value="10" {{ (int)$customer->grade === 10 ? 'selected' : '' }}>Kelas 10</option>
+                                                            <option value="11" {{ (int)$customer->grade === 11 ? 'selected' : '' }}>Kelas 11</option>
+                                                            <option value="12" {{ (int)$customer->grade === 12 ? 'selected' : '' }}>Kelas 12</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Kelas</label>
+                                                        <select name="kelas" class="form-select" required>
+                                                            @foreach($kelasList ?? [] as $k)
+                                                                <option value="{{ $k }}" {{ $customer->kelas === $k ? 'selected' : '' }}>{{ $k }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Password Baru (Opsional)</label>
+                                                    <input type="password" name="password" class="form-control" minlength="12" placeholder="Kosongkan jika tidak ingin mengubah password">
+                                                    <div class="form-text small">Jika diisi, minimal 12 karakter kombinasi huruf besar, kecil, angka, dan simbol.</div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold">PIN Baru 6 Digit (Opsional)</label>
+                                                    <input type="password" name="pin" class="form-control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Kosongkan jika tidak ingin mengubah PIN">
+                                                    <div class="form-text small">PIN 6 digit angka untuk transaksi tarik tunai.</div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                                                <button type="submit" class="btn btn-primary btn-sm px-3">Simpan Perubahan</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         @empty
                             <tr id="emptyCustomersRow">
                                 <td colspan="9" class="text-center text-muted py-3">Belum ada nasabah yang diaktifkan.</td>

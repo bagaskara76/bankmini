@@ -419,6 +419,57 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User berhasil dibuat.');
     }
 
+    public function updateUser(Request $request, User $user)
+    {
+        if (! in_array($user->role, ['admin', 'teller'], true)) {
+            return back()->with('error', 'User tidak valid untuk diedit di sini.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id],
+            'role' => ['required', 'in:admin,teller'],
+            'password' => ['nullable', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
+        ], [
+            'name.required' => 'Nama wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username sudah digunakan oleh akun lain.',
+            'password.min' => 'Password baru minimal 12 karakter.',
+            'password.mixed_case' => 'Password baru harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password baru harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password baru harus mengandung minimal satu karakter spesial.',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->username = $validated['username'];
+        $user->role = $validated['role'];
+
+        if (! empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+            $user->plain_password = $validated['password'];
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.users')->with('success', "Data user '{$user->name}' berhasil diperbarui.");
+    }
+
+    public function deleteUser(User $user)
+    {
+        if (Auth::id() === $user->id) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
+        }
+
+        if (! in_array($user->role, ['admin', 'teller'], true)) {
+            return back()->with('error', 'User tidak valid.');
+        }
+
+        $name = $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', "User '{$name}' berhasil dihapus.");
+    }
+
     public function masterAccounts()
     {
         return redirect()->route('admin.members.index');
@@ -457,8 +508,10 @@ class AdminController extends Controller
             ->whereHas('user', fn ($query) => $query->where('role', 'customer'))
             ->orderByDesc('id')
             ->get();
+        $kelasList = Customer::availableKelas();
+        $gradeList = [10, 11, 12];
 
-        return view('admin.data_saver', compact('customers'));
+        return view('admin.data_saver', compact('customers', 'kelasList', 'gradeList'));
     }
 
     public function activateMember(Request $request, PendingMember $pendingMember)
@@ -566,6 +619,58 @@ class AdminController extends Controller
         });
 
         return redirect()->route('admin.data_saver')->with('success', 'Email OTP nasabah berhasil diperbarui.');
+    }
+
+    public function updateCustomer(Request $request, Customer $customer)
+    {
+        $user = $customer->user;
+        if (! $user) {
+            return back()->with('error', 'User nasabah tidak ditemukan.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'grade' => ['required', 'in:10,11,12'],
+            'kelas' => ['required', 'string', 'max:50'],
+            'password' => ['nullable', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
+            'pin' => ['nullable', 'digits:6'],
+        ], [
+            'name.required' => 'Nama nasabah wajib diisi.',
+            'username.required' => 'Username nasabah wajib diisi.',
+            'username.unique' => 'Username sudah digunakan oleh akun lain.',
+            'email.unique' => 'Email sudah digunakan oleh akun lain.',
+            'grade.required' => 'Tingkat kelas wajib dipilih.',
+            'kelas.required' => 'Kelas wajib dipilih.',
+            'password.min' => 'Password baru minimal 12 karakter.',
+            'password.mixed_case' => 'Password baru harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password baru harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password baru harus mengandung minimal satu karakter spesial.',
+            'pin.digits' => 'PIN harus terdiri dari 6 angka.',
+        ]);
+
+        DB::transaction(function () use ($customer, $user, $validated) {
+            $user->name = $validated['name'];
+            $user->username = $validated['username'];
+            if (! empty($validated['email'])) {
+                $user->email = strtolower($validated['email']);
+            }
+            if (! empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+                $user->plain_password = $validated['password'];
+            }
+            $user->save();
+
+            $customer->grade = (int) $validated['grade'];
+            $customer->kelas = $validated['kelas'];
+            if (! empty($validated['pin'])) {
+                $customer->pin = Hash::make($validated['pin']);
+            }
+            $customer->save();
+        });
+
+        return redirect()->route('admin.data_saver')->with('success', "Data nasabah '{$user->name}' berhasil diperbarui.");
     }
 
     public function blockCustomer(Customer $customer)
