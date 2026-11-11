@@ -156,34 +156,10 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    @if(Auth::user()->role === 'teller')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('teller.dashboard') ? 'active fw-semibold' : '' }}" href="{{ route('teller.dashboard') }}">Dashboard</a>
-                        </li>
-                    @elseif(Auth::user()->role === 'admin')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active fw-semibold' : '' }}" href="{{ route('admin.dashboard') }}">Dashboard</a>
-                        </li>
-                    @endif
-                </ul>
                 <ul class="navbar-nav ms-auto align-items-center gap-2">
                     <li class="nav-item">
                         <span class="nav-link">{{ Auth::user()->name }} ({{ ucfirst(Auth::user()->role) }})</span>
                     </li>
-                    @if(Auth::user()->role === 'teller')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('teller.change_password') ? 'active fw-semibold text-white' : '' }}" href="{{ route('teller.change_password') }}">
-                                Ganti Password
-                            </a>
-                        </li>
-                    @elseif(Auth::user()->role === 'admin')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('admin.change_password') ? 'active fw-semibold text-white' : '' }}" href="{{ route('admin.change_password') }}">
-                                Ganti Password
-                            </a>
-                        </li>
-                    @endif
                     <li class="nav-item">
                         <form action="{{ route('logout') }}" method="POST" class="d-inline">
                             @csrf

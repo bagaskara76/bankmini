@@ -3,16 +3,9 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-7 col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="fw-bold mb-1">Ganti Password Teller</h4>
-                <p class="text-muted mb-0">Perbarui kata sandi akun teller Anda demi menjaga keamanan operasional kas.</p>
-            </div>
-            <div>
-                <a href="{{ route('teller.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                    Kembali ke Dashboard
-                </a>
-            </div>
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">Ganti Password Teller</h4>
+            <p class="text-muted mb-0">Perbarui kata sandi akun teller Anda demi menjaga keamanan operasional kas.</p>
         </div>
 
         @if(session('success'))
@@ -103,3 +96,4 @@
     </div>
 </div>
 @endsection
+

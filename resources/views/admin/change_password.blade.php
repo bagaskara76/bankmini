@@ -3,16 +3,9 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-8 col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="fw-bold mb-1">Ganti Password Administrator</h4>
-                <p class="text-muted mb-0">Perbarui kata sandi akun administrator Anda secara berkala demi keamanan.</p>
-            </div>
-            <div>
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                    Kembali ke Dashboard
-                </a>
-            </div>
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">Ganti Password Administrator</h4>
+            <p class="text-muted mb-0">Perbarui kata sandi akun administrator Anda secara berkala demi keamanan.</p>
         </div>
 
         @if(session('success'))
@@ -102,3 +95,4 @@
     </div>
 </div>
 @endsection
+
