@@ -427,9 +427,7 @@ class AdminController extends Controller
 
         $pendingMembers = PendingMember::query()
             ->when($memberSearch !== '', fn ($query) => $query->where('name', 'like', '%' . $memberSearch . '%'))
-            ->orderBy('grade')
-            ->orderBy('kelas')
-            ->orderBy('name')
+            ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
