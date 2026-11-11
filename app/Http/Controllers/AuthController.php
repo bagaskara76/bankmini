@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -270,13 +271,16 @@ class AuthController extends Controller
         $field = $otpRequest->purpose === 'password' ? 'password' : 'pin';
         $rules = [
             $field => $field === 'password'
-                ? ['required', 'string', 'min:5', 'confirmed']
+                ? ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols(), 'confirmed']
                 : ['required', 'digits:6', 'confirmed'],
         ];
         $messages = [
             "{$field}.required" => $field === 'password' ? 'Password baru wajib diisi.' : 'PIN baru wajib diisi.',
             "{$field}.confirmed" => 'Konfirmasi tidak cocok.',
-            "{$field}.min" => 'Password harus terdiri dari minimal 5 karakter.',
+            "{$field}.min" => 'Password harus terdiri dari minimal 12 karakter.',
+            "{$field}.mixed_case" => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            "{$field}.numbers" => 'Password harus mengandung minimal satu angka.',
+            "{$field}.symbols" => 'Password harus mengandung minimal satu karakter spesial.',
             "{$field}.digits" => 'PIN harus terdiri dari 6 angka.',
         ];
 

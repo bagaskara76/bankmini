@@ -29,13 +29,13 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">Password Baru</label>
                             <input type="password" class="form-control" id="password" name="password"
-                                   minlength="5" required autocomplete="new-password" autofocus>
-                            <div class="form-text">Password minimal 5 karakter dan harus berbeda dari password lama.</div>
+                                   minlength="12" required autocomplete="new-password" autofocus>
+                            <div class="form-text">Password minimal 12 karakter, kombinasi huruf kapital, huruf kecil, angka, dan karakter spesial.</div>
                         </div>
                         <div class="mb-4">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
                             <input type="password" class="form-control" id="password_confirmation"
-                                   name="password_confirmation" minlength="5" required autocomplete="new-password">
+                                   name="password_confirmation" minlength="12" required autocomplete="new-password">
                         </div>
                     @else
                         <div class="mb-3">

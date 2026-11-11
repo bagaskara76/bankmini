@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use InvalidArgumentException;
 
 class AdminController extends Controller
@@ -397,11 +398,14 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
-            'password' => 'required|string|min:5',
+            'password' => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
             'role' => 'required|in:admin,teller',
         ], [
             'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password harus terdiri dari minimal 5 karakter.',
+            'password.min' => 'Password harus terdiri dari minimal 12 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
         ]);
 
         $user = User::create([
@@ -461,13 +465,16 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
-            'password' => ['required', 'string', 'min:5'],
+            'password' => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
             'pin' => ['required', 'digits:6'],
             'initial_balance' => ['required', 'integer', 'min:'.Customer::MINIMUM_BALANCE, 'max:9223372036854775807'],
         ], [
             'username.required' => 'Username wajib diisi.',
             'username.unique' => 'Username sudah digunakan.',
-            'password.min' => 'Password minimal 5 karakter.',
+            'password.min' => 'Password minimal 12 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
             'pin.digits' => 'PIN harus terdiri dari 6 angka.',
             'initial_balance.min' => 'Saldo awal minimum Rp'.number_format(Customer::MINIMUM_BALANCE, 0, ',', '.').'.',
             'initial_balance.max' => 'Saldo awal melebihi batas maksimum database.',

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class MobileCustomerController extends Controller
 {
@@ -308,10 +309,13 @@ class MobileCustomerController extends Controller
             'username' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'reset_token' => ['required', 'string', 'size:64'],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
         ], [
             'password.required' => 'Password baru wajib diisi.',
-            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.min' => 'Password baru minimal 12 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
             'password.max' => 'Password baru maksimal 255 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
@@ -382,11 +386,14 @@ class MobileCustomerController extends Controller
     {
         $validated = $request->validate([
             'current_password' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
         ], [
             'current_password.required' => 'Password saat ini wajib diisi.',
             'password.required' => 'Password baru wajib diisi.',
-            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.min' => 'Password baru minimal 12 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf kapital dan huruf kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.symbols' => 'Password harus mengandung minimal satu karakter spesial.',
             'password.max' => 'Password baru maksimal 255 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);

@@ -255,7 +255,8 @@
                     <div class="mb-3">
                         <label for="activationPassword" class="form-label">Password</label>
                         <input id="activationPassword" name="password" type="password" class="form-control"
-                               minlength="5" required autocomplete="new-password">
+                               minlength="12" required autocomplete="new-password">
+                        <div class="form-text">Min. 12 karakter, huruf kapital, huruf kecil, angka, dan karakter spesial.</div>
                     </div>
                     <div class="mb-3">
                         <label for="activationPin" class="form-label">PIN Keamanan (6 digit)</label>

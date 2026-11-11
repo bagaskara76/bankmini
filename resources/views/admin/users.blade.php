@@ -20,7 +20,7 @@
                     <input name="username" class="form-control" placeholder="Username" required>
                 </div>
                 <div class="col-md-2">
-                    <input name="password" type="password" class="form-control" placeholder="Password" required>
+                    <input name="password" type="password" class="form-control" placeholder="Password (min. 12 karakter)" minlength="12" required title="Min. 12 karakter, huruf kapital, huruf kecil, angka, karakter spesial">
                 </div>
                 <div class="col-md-2">
                     <select name="role" class="form-select" required>
