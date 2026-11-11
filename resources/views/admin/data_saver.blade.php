@@ -111,6 +111,11 @@
                                         </form>
                                     @endif
 
+                                    @php
+                                        $canDelete = $customer->balance <= \App\Models\Customer::MINIMUM_BALANCE
+                                                     && !$customer->transactions()->exists();
+                                    @endphp
+                                    @if($canDelete)
                                     <form method="POST" action="{{ route('admin.customers.delete', $customer->id) }}"
                                           class="d-inline"
                                           onsubmit="return confirm('Hapus nasabah {{ addslashes($user?->name ?? '') }}? Histori transaksi tetap tersimpan.')">
@@ -118,6 +123,12 @@
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-danger">Hapus</button>
                                     </form>
+                                    @else
+                                    <button class="btn btn-sm btn-danger" disabled
+                                            title="@if($customer->balance > \App\Models\Customer::MINIMUM_BALANCE)Saldo masih aktif (Rp {{ number_format($customer->balance, 0, ',', '.') }})@else Memiliki riwayat transaksi @endif">
+                                        Hapus
+                                    </button>
+                                    @endif
                                 </td>
                             </tr>
 

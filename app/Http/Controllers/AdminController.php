@@ -703,6 +703,18 @@ class AdminController extends Controller
     {
         $user = $customer->user;
 
+        // Tolak hapus jika saldo nasabah masih di atas saldo minimum (> 10.000)
+        if ($customer->balance > Customer::MINIMUM_BALANCE) {
+            return redirect()->route('admin.data_saver')
+                ->with('error', 'Nasabah tidak dapat dihapus karena masih memiliki saldo aktif (Rp ' . number_format($customer->balance, 0, ',', '.') . '). Tarik saldo terlebih dahulu.');
+        }
+
+        // Tolak hapus jika nasabah memiliki riwayat transaksi
+        if ($customer->transactions()->exists()) {
+            return redirect()->route('admin.data_saver')
+                ->with('error', 'Nasabah tidak dapat dihapus karena memiliki riwayat transaksi. Gunakan fitur Blokir untuk menonaktifkan akun.');
+        }
+
         DB::transaction(function () use ($customer, $user) {
             // Keep account history so approved daily reports remain auditable.
             if ($user) {
@@ -714,7 +726,7 @@ class AdminController extends Controller
         });
 
         return redirect()->route('admin.data_saver')
-            ->with('success', 'Akun nasabah dihapus dan histori transaksinya tetap tersimpan.');
+            ->with('success', 'Akun nasabah berhasil dihapus.');
     }
 
     /**
