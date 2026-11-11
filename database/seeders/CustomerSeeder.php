@@ -32,25 +32,38 @@ class CustomerSeeder extends Seeder
         ];
 
         $customerUsers = User::where('role', 'customer')->orderBy('id')->get();
+        $year = date('Y');
 
         foreach ($customerUsers as $i => $user) {
+            // Cek apakah customer sudah ada (termasuk yang soft-deleted)
+            $existingCustomer = Customer::withTrashed()->where('user_id', $user->id)->first();
+            if ($existingCustomer) {
+                if ($existingCustomer->trashed()) {
+                    $existingCustomer->restore();
+                }
+                continue;
+            }
+
             $kelasData = $kelas[$i % count($kelas)];
             $balance   = $balances[$i % count($balances)];
-            $year      = date('Y');
-            $accountNo = $year . str_pad($user->id, 6, '0', STR_PAD_LEFT);
 
-            Customer::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'account_number' => $accountNo,
-                    'pin'            => Hash::make('123456'),
-                    'qr_code_string' => $accountNo,
-                    'balance'        => $balance,
-                    'grade'          => $kelasData['grade'],
-                    'kelas'          => $kelasData['kelas'],
-                    'is_graduated'   => false,
-                ]
-            );
+            // Cari nomor rekening unik yang belum pernah dipakai di tabel (termasuk yang soft-deleted)
+            $seq = (int) $user->id;
+            do {
+                $accountNo = $year . str_pad($seq, 6, '0', STR_PAD_LEFT);
+                $seq++;
+            } while (Customer::withTrashed()->where('account_number', $accountNo)->orWhere('qr_code_string', $accountNo)->exists());
+
+            Customer::create([
+                'user_id'        => $user->id,
+                'account_number' => $accountNo,
+                'pin'            => Hash::make('123456'),
+                'qr_code_string' => $accountNo,
+                'balance'        => $balance,
+                'grade'          => $kelasData['grade'],
+                'kelas'          => $kelasData['kelas'],
+                'is_graduated'   => false,
+            ]);
         }
     }
 }

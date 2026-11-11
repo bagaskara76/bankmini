@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\PendingMember;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PendingMemberSeeder extends Seeder
@@ -25,10 +26,16 @@ class PendingMemberSeeder extends Seeder
         ];
 
         foreach ($members as $m) {
-            PendingMember::firstOrCreate(
-                ['name' => $m['name'], 'grade' => $m['grade'], 'kelas' => $m['kelas']],
-                ['email' => $m['email']]
-            );
+            // Hindari duplikasi email jika sudah ada di pending_members atau users
+            if ($m['email'] && (PendingMember::where('email', $m['email'])->exists() || User::where('email', $m['email'])->exists())) {
+                continue;
+            }
+
+            if (PendingMember::where('name', $m['name'])->where('grade', $m['grade'])->where('kelas', $m['kelas'])->exists()) {
+                continue;
+            }
+
+            PendingMember::create($m);
         }
     }
 }

@@ -30,3 +30,4 @@ class PinResetRequestSeeder extends Seeder
         }
     }
 }
+

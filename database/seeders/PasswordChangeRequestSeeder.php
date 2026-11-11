@@ -30,3 +30,4 @@ class PasswordChangeRequestSeeder extends Seeder
         }
     }
 }
+
