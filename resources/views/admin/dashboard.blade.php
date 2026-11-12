@@ -109,6 +109,20 @@
                     <a href="{{ route('admin.class_promotion') }}" class="stretched-link" aria-label="Buka fitur kenaikan kelas"></a>
                 </article>
             </div>
+            <div class="col">
+                <article class="card admin-menu-card">
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-megaphone admin-menu-card__icon"></i><span>Info Bank Mini</span></h3>
+                    <p class="admin-menu-card__description">Buat dan kelola pengumuman untuk ditampilkan kepada nasabah di aplikasi mobile.</p>
+                    <a href="{{ route('admin.announcements') }}" class="stretched-link" aria-label="Buka Info Bank Mini"></a>
+                </article>
+            </div>
+            <div class="col">
+                <article class="card admin-menu-card">
+                    <h3 class="admin-menu-card__heading"><i class="bi bi-calendar2-check admin-menu-card__icon"></i><span>Perjanjian Penarikan</span></h3>
+                    <p class="admin-menu-card__description">Tinjau, setujui, atau tolak pengajuan penarikan dana lebih dari 1 juta dari nasabah.</p>
+                    <a href="{{ route('admin.withdrawal_requests') }}" class="stretched-link" aria-label="Buka Perjanjian Penarikan"></a>
+                </article>
+            </div>
         </div>
     </section>
 
