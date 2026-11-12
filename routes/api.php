@@ -20,6 +20,9 @@ Route::post('/deploy/migrate', [DeploymentController::class, 'migrate'])
     ->middleware('throttle:3,1');
 
 Route::prefix('mobile')->group(function () {
+    // Pengumuman publik
+    Route::get('/announcements', [MobileCustomerController::class, 'announcements']);
+
     Route::post('/login', [MobileCustomerController::class, 'login'])
         ->middleware('throttle:5,1');
     Route::post('/password/otp', [MobileCustomerController::class, 'requestPasswordOtp'])
@@ -42,6 +45,10 @@ Route::prefix('mobile')->group(function () {
             ->middleware('throttle:5,1');
         Route::post('/pin/change', [MobileCustomerController::class, 'changePin'])
             ->middleware('throttle:5,1');
+
+        // Perjanjian Penarikan Mobile
+        Route::get('/withdrawal-requests', [MobileCustomerController::class, 'withdrawalRequests']);
+        Route::post('/withdrawal-requests', [MobileCustomerController::class, 'createWithdrawalRequest']);
 
         // Otorisasi PIN Penarikan di aplikasi mobile
         Route::get('/pin/pending-session', [MobileCustomerController::class, 'pendingPinSession']);

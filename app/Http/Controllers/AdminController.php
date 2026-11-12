@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcement;
 use App\Models\Customer;
 use App\Models\DailyReport;
 use App\Models\PendingMember;
 use App\Models\RecoveryOtp;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\WithdrawalRequest;
 use App\Services\BankingTransactionService;
 use App\Services\MemberImportNormalizer;
 use App\Services\MemberXlsx;
@@ -1026,5 +1028,98 @@ class AdminController extends Controller
                 ]);
             }
         });
+    }
+
+    // ─── Fitur Info Bank Mini ───────────────────────────────────────────────
+
+    /**
+     * Menu Info Bank Mini — daftar pengumuman.
+     */
+    public function announcements()
+    {
+        $announcements = Announcement::with('createdBy')->orderByDesc('id')->get();
+
+        return view('admin.announcements', compact('announcements'));
+    }
+
+    /**
+     * Simpan pengumuman baru.
+     */
+    public function storeAnnouncement(Request $request)
+    {
+        $data = $request->validate([
+            'title'   => 'required|string|max:200',
+            'content' => 'required|string',
+            'type'    => 'required|in:info,warning,important',
+        ]);
+        $data['created_by'] = auth()->id();
+        Announcement::create($data);
+
+        return back()->with('success', 'Pengumuman berhasil disimpan.');
+    }
+
+    /**
+     * Hapus pengumuman.
+     */
+    public function destroyAnnouncement(Announcement $announcement)
+    {
+        $announcement->delete();
+
+        return back()->with('success', 'Pengumuman berhasil dihapus.');
+    }
+
+    /**
+     * Toggle status aktif/nonaktif pengumuman.
+     */
+    public function toggleAnnouncement(Announcement $announcement)
+    {
+        $announcement->update(['is_active' => ! $announcement->is_active]);
+
+        return back()->with('success', 'Status pengumuman diubah.');
+    }
+
+    // ─── Fitur Perjanjian Penarikan ─────────────────────────────────────────
+
+    /**
+     * Daftar permohonan perjanjian penarikan nasabah.
+     */
+    public function withdrawalRequests()
+    {
+        $requests = WithdrawalRequest::with('customer.user')
+            ->orderByDesc('id')
+            ->paginate(20);
+
+        return view('admin.withdrawal_requests', compact('requests'));
+    }
+
+    /**
+     * Setujui pengajuan penarikan nasabah.
+     */
+    public function approveWithdrawalRequest(WithdrawalRequest $withdrawalRequest)
+    {
+        $withdrawalRequest->update([
+            'status'      => 'approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'admin_note'  => null,
+        ]);
+
+        return back()->with('success', 'Pengajuan penarikan disetujui.');
+    }
+
+    /**
+     * Tolak pengajuan penarikan nasabah dengan catatan alasan.
+     */
+    public function rejectWithdrawalRequest(WithdrawalRequest $withdrawalRequest, Request $request)
+    {
+        $data = $request->validate(['admin_note' => 'required|string|max:500']);
+        $withdrawalRequest->update([
+            'status'      => 'rejected',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'admin_note'  => $data['admin_note'],
+        ]);
+
+        return back()->with('success', 'Pengajuan penarikan ditolak.');
     }
 }

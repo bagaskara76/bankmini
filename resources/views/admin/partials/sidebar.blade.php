@@ -35,6 +35,16 @@
            @if(request()->routeIs('admin.class_promotion*')) aria-current="page" @endif>
             Kenaikan Kelas
         </a>
+        <a class="nav-link {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}"
+           href="{{ route('admin.announcements') }}"
+           @if(request()->routeIs('admin.announcements*')) aria-current="page" @endif>
+            Info Bank Mini
+        </a>
+        <a class="nav-link {{ request()->routeIs('admin.withdrawal_requests*') ? 'active' : '' }}"
+           href="{{ route('admin.withdrawal_requests') }}"
+           @if(request()->routeIs('admin.withdrawal_requests*')) aria-current="page" @endif>
+            Perjanjian Penarikan
+        </a>
     </div>
 
     <div class="admin-sidebar__group">

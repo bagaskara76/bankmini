@@ -61,6 +61,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/transfer-approval', [\App\Http\Controllers\AdminController::class, 'transferApproval'])->name('admin.transfer_approval');
     Route::get('/admin/change-password', [\App\Http\Controllers\AdminController::class, 'showChangePassword'])->name('admin.change_password');
     Route::post('/admin/change-password', [\App\Http\Controllers\AdminController::class, 'updatePassword'])->name('admin.update_password');
+
+    // Info Bank Mini
+    Route::get('/admin/info-bank', [\App\Http\Controllers\AdminController::class, 'announcements'])->name('admin.announcements');
+    Route::post('/admin/info-bank', [\App\Http\Controllers\AdminController::class, 'storeAnnouncement'])->name('admin.announcements.store');
+    Route::delete('/admin/info-bank/{announcement}', [\App\Http\Controllers\AdminController::class, 'destroyAnnouncement'])->name('admin.announcements.destroy');
+    Route::post('/admin/info-bank/{announcement}/toggle', [\App\Http\Controllers\AdminController::class, 'toggleAnnouncement'])->name('admin.announcements.toggle');
+
+    // Perjanjian Penarikan
+    Route::get('/admin/withdrawal-requests', [\App\Http\Controllers\AdminController::class, 'withdrawalRequests'])->name('admin.withdrawal_requests');
+    Route::post('/admin/withdrawal-requests/{withdrawalRequest}/approve', [\App\Http\Controllers\AdminController::class, 'approveWithdrawalRequest'])->name('admin.withdrawal_requests.approve');
+    Route::post('/admin/withdrawal-requests/{withdrawalRequest}/reject', [\App\Http\Controllers\AdminController::class, 'rejectWithdrawalRequest'])->name('admin.withdrawal_requests.reject');
 });
 
 // Teller Routes

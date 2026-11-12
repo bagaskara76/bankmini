@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\Customer;
 use App\Models\PinSession;
 use App\Models\RecoveryOtp;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\WithdrawalRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -553,6 +555,55 @@ class MobileCustomerController extends Controller
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json(['message' => 'Logout berhasil.']);
+    }
+
+    /**
+     * Endpoint publik (tanpa auth): ambil pengumuman aktif.
+     */
+    public function announcements(): JsonResponse
+    {
+        $data = Announcement::where('is_active', true)
+            ->orderByDesc('id')
+            ->get(['id', 'title', 'content', 'type', 'created_at']);
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Daftar permohonan penarikan nasabah yang sedang login.
+     */
+    public function withdrawalRequests(Request $request): JsonResponse
+    {
+        $customer = $this->customerFor($request->user());
+        $data = WithdrawalRequest::where('customer_id', $customer->id)
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Pengajuan penarikan baru untuk nasabah.
+     */
+    public function createWithdrawalRequest(Request $request): JsonResponse
+    {
+        $customer = $this->customerFor($request->user());
+        $validated = $request->validate([
+            'amount'          => 'required|integer|min:1000001',
+            'withdrawal_date' => 'required|date|after:today',
+            'note'            => 'nullable|string|max:500',
+        ], [
+            'amount.min'            => 'Nominal penarikan harus lebih dari Rp 1.000.000.',
+            'withdrawal_date.after' => 'Tanggal pengambilan harus minimal besok.',
+        ]);
+
+        $validated['customer_id'] = $customer->id;
+        $wr = WithdrawalRequest::create($validated);
+
+        return response()->json([
+            'message' => 'Pengajuan penarikan berhasil diajukan. Tunggu persetujuan admin.',
+            'data'    => $wr,
+        ], 201);
     }
 
     private function customerData(User $user): array
