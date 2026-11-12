@@ -75,6 +75,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 // Teller Routes
+Route::get('/run-migrate-force-2026', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return '<pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+});
+
 Route::middleware(['auth', 'role:teller'])->group(function () {
     Route::get('/teller/dashboard', [\App\Http\Controllers\TellerController::class, 'dashboard'])->name('teller.dashboard');
     Route::post('/teller/initial-capital', [\App\Http\Controllers\TellerController::class, 'addInitialCapital'])->name('teller.initial_capital');
